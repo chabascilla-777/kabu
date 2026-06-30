@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>株式管理表</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --line:#e3e8ef; --ink:#1f2933;
+    --sub:#697586; --accent:#2563eb; --accent-soft:#eff4ff;
+    --plus:#d92d20; --minus:#1570cf; --head:#0f2540;
+    --edit:#fffef7; --calc:#f7f9fc;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:-apple-system,"Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;
+    margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+  }
+  header{
+    background:var(--head);color:#fff;padding:16px 22px;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  }
+  header h1{font-size:18px;margin:0;letter-spacing:.04em;}
+  header .tools{display:flex;gap:8px;flex-wrap:wrap;}
+  header button{
+    background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);
+    padding:7px 12px;border-radius:7px;cursor:pointer;font-size:12.5px;
+  }
+  header button:hover{background:rgba(255,255,255,.22);}
+  .tabs{display:flex;gap:4px;padding:14px 22px 0;flex-wrap:wrap;}
+  .tab{
+    padding:9px 18px;border:1px solid var(--line);border-bottom:none;
+    background:#e9edf3;border-radius:8px 8px 0 0;cursor:pointer;color:var(--sub);font-weight:600;
+  }
+  .tab.active{background:var(--card);color:var(--accent);}
+  main{padding:0 22px 40px;}
+  .panel{
+    display:none;background:var(--card);border:1px solid var(--line);
+    border-radius:0 10px 10px 10px;padding:18px;
+  }
+  .panel.active{display:block;}
+  .panel h2{font-size:15px;margin:0 0 4px;}
+  .panel .desc{color:var(--sub);font-size:12.5px;margin:0 0 14px;}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:680px;}
+  th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;}
+  th{background:var(--accent-soft);color:var(--head);font-weight:600;white-space:nowrap;}
+  td.txt,th.txt{text-align:left;}
+  td[contenteditable]{background:var(--edit);cursor:text;color:var(--ink);}
+  td[contenteditable]:focus{outline:2px solid var(--accent);background:#fff;}
+  td.calc{background:var(--calc);color:var(--sub);}
+  td.pos,.pos{color:var(--plus)!important;font-weight:600;}
+  td.neg,.neg{color:var(--minus)!important;font-weight:600;}
+  tfoot td{background:#eef2f7;font-weight:700;color:var(--ink);}
+  .row-tools{margin-top:12px;display:flex;gap:8px;}
+  .btn{
+    background:var(--accent);color:#fff;border:none;padding:8px 14px;
+    border-radius:7px;cursor:pointer;font-size:13px;
+  }
+  .btn:hover{filter:brightness(1.07);}
+  .btn.ghost{background:#eef2f7;color:var(--ink);border:1px solid var(--line);}
+  .del{color:#b42318;cursor:pointer;font-weight:600;background:#fdecec;border:1px solid #f5cfcf;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;}
+  .del:hover{background:#fbdcdc;}
+  td.act{width:1%;white-space:nowrap;text-align:right;padding-left:9px;}
+  .btn-sm{color:var(--accent);cursor:pointer;font-weight:600;background:var(--accent-soft);border:1px solid #cfe0ff;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;margin-right:4px;}
+  .btn-sm:hover{background:#e3edff;}
+  .trade-form{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .trade-form label{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink);gap:10px;}
+  .trade-form input,.trade-form select{width:150px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;text-align:right;}
+  .trade-form select{text-align:left;}
+  select{font-size:13px;padding:3px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
+  .kpi{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:14px;}
+  .kpi .l{font-size:12px;color:var(--sub);margin-bottom:6px;}
+  .kpi .v{font-size:20px;font-weight:700;}
+  .bar{height:22px;border-radius:5px;display:flex;overflow:hidden;border:1px solid var(--line);}
+  .bar span{display:block;}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:12px;}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+  .note{color:var(--sub);font-size:11.5px;margin-top:14px;line-height:1.6;}
+  .year-sum{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .year-sum .yr{background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;}
+  .year-sum .yr b{color:var(--head);margin-right:8px;}
+  .help{font-size:13.5px;line-height:1.8;color:var(--ink);max-width:760px;}
+  .help h3{font-size:14px;color:var(--head);margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--accent-soft);}
+  .help h3:first-of-type{margin-top:4px;}
+  .help ul{margin:6px 0;padding-left:20px;}
+  .help li{margin:3px 0;}
+  .help .tag{display:inline-block;background:var(--accent-soft);color:var(--accent);border:1px solid #cfe0ff;border-radius:5px;padding:1px 7px;font-size:12px;font-weight:600;margin:0 2px;}
+  .help .warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;margin-top:8px;color:#7c4a13;font-size:12.5px;}
+  /* 削除確認ダイアログ */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(15,37,64,.45);
+    display:none;align-items:center;justify-content:center;z-index:200;
+    backdrop-filter:blur(2px);
+  }
+  .modal-overlay.show{display:flex;animation:fade .12s ease;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal-box{
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:22px 22px 18px;width:320px;max-width:90vw;
+    box-shadow:0 14px 40px rgba(15,37,64,.22);
+  }
+  .modal-title{margin:0 0 6px;font-size:15px;color:var(--head);}
+  .modal-body{margin:0 0 18px;font-size:13px;color:var(--sub);word-break:break-all;}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .m-btn{padding:8px 16px;border-radius:7px;border:1px solid var(--line);cursor:pointer;font-size:13px;font-weight:600;}
+  .m-cancel{background:#eef2f7;color:var(--ink);}
+  .m-cancel:hover{background:#e2e8f1;}
+  .m-ok{background:var(--head);color:#fff;border-color:var(--head);}
+  .m-ok:hover{filter:brightness(1.15);}
+</style>
+</head>
+<body>
+<header>
+  <h1>株式管理表 <span style="font-weight:400;font-size:12px;opacity:.7;">日本株</span></h1>
+  <div class="tools">
+    <button onclick="saveLocal()">💾 保存</button>
+    <button onclick="exportJSON()">⬇ バックアップ</button>
+    <button onclick="document.getElementById('imp').click()">⬆ 読込</button>
+    <input id="imp" type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-t="hold" onclick="switchTab('hold')">保有株 損益</div>
+  <div class="tab" data-t="kin" onclick="switchTab('kin')">キンカブ</div>
+  <div class="tab" data-t="div" onclick="switchTab('div')">配当金</div>
+  <div class="tab" data-t="trade" onclick="switchTab('trade')">売買履歴</div>
+  <div class="tab" data-t="sum" onclick="switchTab('sum')">資産サマリー</div>
+  <div class="tab" data-t="help" onclick="switchTab('help')">使い方</div>
+</div>
+
+<main>
+  <!-- 保有株 -->
+  <section class="panel active" id="p-hold">
+    <h2>保有株 損益管理</h2>
+    <p class="desc">取得単価と現在値を入力すると、評価額・評価損益・損益率を自動計算します。黄色のセルが入力欄です。</p>
+    <div class="tbl-wrap"><table id="t-hold">
+      <thead><tr>
+        <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
+        <th>保有株数</th><th>取得単価</th><th>現在値</th>
+        <th>取得額</th><th>評価額</th><th>評価損益</th><th>損益率</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr>
+        <td colspan="6" class="txt">合計</td>
+        <td id="h-cost" class="calc">¥0</td>
+        <td id="h-val" class="calc">¥0</td>
+        <td id="h-pl" class="calc">¥0</td>
+        <td id="h-rate" class="calc">0%</td><td></td>
+      </tr></tfoot>
+    </table></div>
+    <div class="row-tools">
+      <button class="btn" onclick="addHold({date:today()})">＋ 銘柄を追加</button>
+      <button class="btn ghost" id="btn-fetch" onclick="fetchPrices()">🔄 現在値を自動更新</button>
+      <span id="fetch-msg" style="color:var(--sub);font-size:12px;align-self:center;"></span>
+    </div>
+    <p class="note">※ コード欄(例:7203)を入力して欄を離れると、銘柄名と現在値を自動補完します（約15〜20分遅延）。<br>※ まとめて更新したいときは「🔄現在値を自動更新」。取得できない場合は手入力してください。</p>
+  </section>
+
+  <!-- キンカブ(金額指定取引) -->
+  <section class="panel" id="p-kin">
+    <h2>キンカブ（金額指定取引）</h2>
+    <p class="desc">株数ではなく「金額」で売買する取引用です。投資額と約定単価を入力すると、保有株数（小数）・評価額・損益を自動計算します。</p>
+    <div class="tbl-wrap"><table id="t-kin">
+      <thead><tr>
+        <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
+        <th>投資額</th><th>約定単価</th><th>現在値</th>
+        <th>保有株数</th><th>評価額</th><th>評価損益</th><th>損益率</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr>
+        <td colspan="6" class="txt">合計</td>
+        <td id="k-qty" class="calc">-</td>
+        <td id="k-val" class="calc">¥0</td>
+        <td id="k-pl" class="calc">¥0</td>
+        <td id="k-rate" class="calc">0%</td><td></td>
+      </tr></tfoot>
+    </table></div>
+    <div class="row-tools">
+      <button class="btn" onclick="addKin({date:today()})">＋ 銘柄を追加</button>
+      <button class="btn ghost" id="btn-fetch-kin" onclick="fetchPricesKin()">🔄 現在値を自動更新</button>
+      <span id="fetch-msg-kin" style="color:var(--sub);font-size:12px;align-self:center;"></span>
+    </div>
+    <p class="note">※ 投資額(例:10000円)と約定単価から、保有株数＝投資額÷約定単価 を小数で計算します。<br>※ コード欄を入力して欄を離れると、銘柄名と現在値を自動補完します（約15〜20分遅延、取得不可時は手入力）。</p>
+  </section>
+
+  <!-- 配当 -->
+  <section class="panel" id="p-div">
+    <h2>配当金 記録</h2>
+    <p class="desc">受取日・銘柄・受取額を記録します。下部に年間合計を表示します。</p>
+    <div class="tbl-wrap"><table id="t-div">
+      <thead><tr>
+        <th class="txt">受取日</th><th class="txt">コード</th><th class="txt">銘柄名</th>
+        <th>受取額(税引後)</th><th class="txt">メモ</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="3" class="txt">合計(全期間)</td><td id="d-total" class="calc">¥0</td><td colspan="2"></td></tr></tfoot>
+    </table></div>
+    <div id="div-year" class="year-sum"></div>
+    <div class="row-tools"><button class="btn" onclick="addDiv()">＋ 配当を追加</button></div>
+  </section>
+
+  <!-- 売買 -->
+  <section class="panel" id="p-trade">
+    <h2>売買履歴</h2>
+    <p class="desc">取引を記録します。「売」を選ぶと、その行に取得単価を入力すれば実現損益を計算します。</p>
+    <div class="tbl-wrap"><table id="t-trade">
+      <thead><tr>
+        <th class="txt">日付</th><th class="txt">区分</th><th class="txt">コード</th><th class="txt">銘柄名</th>
+        <th>株数</th><th>約定単価</th><th>売却時:取得単価</th><th>受渡金額</th><th>実現損益</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="8" class="txt">実現損益 合計(全期間)</td><td id="tr-pl" class="calc">¥0</td><td></td></tr></tfoot>
+    </table></div>
+    <div id="trade-year" class="year-sum"></div>
+    <div class="row-tools"><button class="btn" onclick="addTrade()">＋ 取引を追加</button></div>
+  </section>
+
+  <!-- サマリー -->
+  <section class="panel" id="p-sum">
+    <h2>資産サマリー</h2>
+    <p class="desc">保有株・キンカブ・配当・売買のデータから全体像を自動集計します。</p>
+    <div class="cards">
+      <div class="kpi"><div class="l">取得総額</div><div class="v" id="s-cost">¥0</div></div>
+      <div class="kpi"><div class="l">評価総額</div><div class="v" id="s-val">¥0</div></div>
+      <div class="kpi"><div class="l">評価損益</div><div class="v" id="s-pl">¥0</div></div>
+      <div class="kpi"><div class="l">実現損益</div><div class="v" id="s-real">¥0</div></div>
+      <div class="kpi"><div class="l">受取配当 合計</div><div class="v" id="s-div">¥0</div></div>
+      <div class="kpi"><div class="l">総合損益(評価+実現+配当)</div><div class="v" id="s-grand">¥0</div></div>
+    </div>
+    <h2 style="margin-top:8px;">ポートフォリオ構成比(評価額)</h2>
+    <div class="bar" id="s-bar"></div>
+    <div class="legend" id="s-legend"></div>
+    <p class="note">
+      ※ 現在値は各タブの「🔄現在値を自動更新」で取得できます（約15〜20分遅延）。手入力も可能です。<br>
+      ※ データはお使いのブラウザ内に自動保存されます(💾保存)。別PCへ移す場合は「⬇バックアップ」でJSONを書き出し、「⬆読込」で復元できます。
+    </p>
+  </section>
+
+  <!-- 使い方 -->
+  <section class="panel" id="p-help">
+    <h2>使い方ガイド</h2>
+    <div class="help">
+      <p>日本株の保有・損益・配当・売買をまとめて管理できる表です。データはお使いのブラウザ内に自動保存され、サーバーには送信されません。</p>
+
+      <h3>基本操作</h3>
+      <ul>
+        <li><b>入力</b>：黄色いセルをクリックして数値や文字を入力します。グレーのセルは自動計算（編集不可）です。</li>
+        <li><b>確定</b>：入力後 <span class="tag">Enter</span> または別のセルをクリックで確定します（改行はされません）。</li>
+        <li><b>追加</b>：各タブ下部の <span class="tag">＋ 追加</span> ボタンで行を増やせます。</li>
+        <li><b>削除</b>：行右の <span class="tag">削除</span> ボタン。確認ダイアログが出ます。</li>
+        <li><b>銘柄名の自動補完</b>：コード欄（例 7203）を入力して欄を離れると、日本語の銘柄名が自動で入ります。</li>
+        <li><b>現在値の自動取得</b>：<span class="tag">🔄 現在値を自動更新</span> で各銘柄の株価をまとめて取得します（約15〜20分遅延）。</li>
+      </ul>
+
+      <h3>各タブの説明</h3>
+      <ul>
+        <li><b>保有株 損益</b>：株数で保有している銘柄を管理。取得単価（1株を買った値段）と現在値から評価損益を自動計算します。<span class="tag">取引</span> ボタンで売却・買い増しを記録すると、自動で売買履歴に移動します。</li>
+        <li><b>キンカブ</b>：株数ではなく「金額」で売買する取引用。投資額と約定単価から保有株数（小数）を逆算します。<span class="tag">取引</span> では金額を入力して売買します。</li>
+        <li><b>配当金</b>：受け取った配当を記録。全期間合計と、年ごとの合計を表示します。</li>
+        <li><b>売買履歴</b>：売買の記録。「売」を選び取得単価を入れると実現損益を計算します。年ごとの実現損益も表示（確定申告の目安に）。</li>
+        <li><b>資産サマリー</b>：全タブを集計して、取得総額・評価額・損益・配当・構成比を一覧表示します。</li>
+      </ul>
+
+      <h3>データの保存とバックアップ</h3>
+      <ul>
+        <li>入力すると自動保存されます（右上 <span class="tag">💾 保存</span> で手動保存も可能）。</li>
+        <li><span class="tag">⬇ バックアップ</span> でデータをJSONファイルに書き出せます。</li>
+        <li>別のPCへ移すときや復元したいときは <span class="tag">⬆ 読込</span> でJSONを読み込みます。</li>
+      </ul>
+      <div class="warn">⚠️ データはこのブラウザ内にのみ保存されます。ブラウザの履歴・サイトデータを消去すると消えるため、大事なデータは定期的に「⬇ バックアップ」を取ってください。</div>
+
+      <h3>ご注意</h3>
+      <ul>
+        <li>現在値は約15〜20分遅れの参考値です。リアルタイムではありません。</li>
+        <li>自動取得は無料の公開中継サーバー経由のため、時々失敗します。その場合は手入力してください（VPN利用時はブロックされることがあります）。</li>
+        <li>損益計算に税金・手数料は含まれません。実際の損益とは差が出ます。</li>
+        <li>本ツールは記録・管理用で、投資判断はご自身の責任で行ってください。</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<!-- 取引入力ダイアログ -->
+<div id="trade-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 class="modal-title">取引を記録</h3>
+    <p class="modal-body" id="tm-target" style="margin-bottom:14px;"></p>
+    <div class="trade-form">
+      <label>区分<select id="tm-side"><option value="売">売却</option><option value="買">買い増し</option></select></label>
+      <label><span id="tm-qtylabel">株数</span><input id="tm-qty" type="number" min="0"></label>
+      <label><span id="tm-pricelabel">単価</span><input id="tm-price" type="number" min="0"></label>
+      <label>日付<input id="tm-date" type="date"></label>
+    </div>
+    <div class="modal-actions">
+      <button class="m-btn m-cancel" id="tm-cancel">キャンセル</button>
+      <button class="m-btn m-ok" id="tm-ok">記録する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 削除確認ダイアログ -->
+<div id="modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 class="modal-title">この行を削除しますか？</h3>
+    <p class="modal-body" id="modal-target"></p>
+    <div class="modal-actions">
+      <button class="m-btn m-cancel" id="modal-cancel">キャンセル</button>
+      <button class="m-btn m-ok" id="modal-ok">削除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const yen = n => "¥" + Math.round(n).toLocaleString("ja-JP");
+const pct = n => (n>=0?"+":"") + n.toFixed(2) + "%";
+const num = el => parseFloat((el.textContent||"").replace(/[^0-9.\-]/g,""))||0;
+const today = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const colors = ["#2563eb","#16a34a","#d97706","#9333ea","#dc2626","#0891b2","#ca8a04","#4f46e5","#db2777","#65a30d"];
+
+// カスタム確認ダイアログ(Promiseを返す)
+function confirmDialog(label){
+  return new Promise(resolve=>{
+    const m=document.getElementById("modal");
+    document.getElementById("modal-target").textContent=label||"(空の行)";
+    m.classList.add("show");
+    const ok=document.getElementById("modal-ok"), cancel=document.getElementById("modal-cancel");
+    const close=v=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=null; resolve(v); };
+    ok.onclick=()=>close(true);
+    cancel.onclick=()=>close(false);
+    m.onclick=e=>{ if(e.target===m) close(false); };           // 背景クリックで閉じる
+    document.onkeydown=e=>{ if(e.key==="Escape") close(false); }; // Escで閉じる
+  });
+}
+async function delRow(btn,recalc){
+  const tr=btn.closest("tr");
+  const cells=[...tr.children].slice(0,-1)
+    .map(td=>{const s=td.querySelector("select");return s?s.value:td.textContent.trim();})
+    .filter(v=>v && !v.startsWith("¥") && v!=="-" && !v.endsWith("%"));
+  const label=cells.slice(0,3).join("　");
+  if(await confirmDialog(label)){
+    tr.remove(); recalc(); saveLocal();
+  }
+}
+
+// 保有株から取引(売却/買い増し)を記録し、売買履歴へ自動追加
+function openTrade(btn){
+  const tr=btn.closest("tr"), c=tr.children;
+  const code=c[0].textContent.trim(), name=c[1].textContent.trim();
+  const curQty=num(c[3]), curBuy=num(c[4]), now=num(c[5]);
+  const m=document.getElementById("trade-modal");
+  document.getElementById("tm-qtylabel").textContent="株数";
+  document.getElementById("tm-pricelabel").textContent="単価";
+  document.getElementById("tm-target").textContent=(code+" "+name).trim()+`（保有 ${curQty}株 / 取得単価 ${yen(curBuy)}）`;
+  const side=document.getElementById("tm-side"), qty=document.getElementById("tm-qty"),
+        price=document.getElementById("tm-price"), date=document.getElementById("tm-date");
+  side.value="売"; qty.value=curQty||""; price.value=now||curBuy||""; date.value=today();
+  m.classList.add("show");
+  const ok=document.getElementById("tm-ok"), cancel=document.getElementById("tm-cancel");
+  const close=()=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=null; };
+  cancel.onclick=close;
+  m.onclick=e=>{ if(e.target===m) close(); };
+  document.onkeydown=e=>{ if(e.key==="Escape") close(); };
+  ok.onclick=()=>{
+    const q=parseFloat(qty.value)||0, p=parseFloat(price.value)||0, s=side.value;
+    if(q<=0){ alert("株数を入力してください"); return; }
+    if(s==="売" && q>curQty){ alert("保有株数を超えています"); return; }
+    // 売買履歴へ追加(売却時は取得単価をセットして実現損益を計算)
+    addTrade({date:date.value||today(), side:s, code, name, qty:q, price:p, acq:(s==="売"?curBuy:"")});
+    // 保有株を更新
+    if(s==="買"){
+      const newQty=curQty+q, newAvg=newQty?(curQty*curBuy+q*p)/newQty:0;
+      c[3].textContent=newQty; c[4].textContent=Math.round(newAvg);
+    }else{
+      const newQty=curQty-q;
+      if(newQty<=0) tr.remove(); else c[3].textContent=newQty;
+    }
+    calcHold(); calcTrade(); saveLocal(); close();
+    switchTab("trade"); // 売買履歴タブへ移動
+    flash(s==="売"?"売却を記録しました":"買い増しを記録しました");
+  };
+}
+
+function switchTab(t){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.t===t));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  document.getElementById("p-"+t).classList.add("active");
+  if(t==="sum") renderSummary();
+}
+
+/* ---------- 保有株 ---------- */
+function addHold(d={}){
+  const tb=document.querySelector("#t-hold tbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.code||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.name||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.date||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.qty||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.buy||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.now||""}</td>
+    <td class="calc c-cost">¥0</td>
+    <td class="calc c-val">¥0</td>
+    <td class="calc c-pl">¥0</td>
+    <td class="calc c-rate">0%</td>
+    <td class="act"><button class="btn-sm" onclick="openTrade(this)">取引</button><button class="del" onclick="delRow(this,calcHold)">削除</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcHold));
+  tr.children[0].addEventListener("blur",e=>autoName(e.target, tr.children[1], tr.children[5], calcHold)); // コード→銘柄名・現在値を自動補完
+  calcHold();
+}
+function calcHold(){
+  let tCost=0,tVal=0;
+  document.querySelectorAll("#t-hold tbody tr").forEach(tr=>{
+    const c=tr.children, qty=num(c[3]),buy=num(c[4]),now=num(c[5]);
+    const cost=qty*buy, val=qty*now, pl=val-cost, rate=cost?pl/cost*100:0;
+    c[6].textContent=yen(cost); c[7].textContent=yen(val);
+    c[8].textContent=yen(pl); c[8].className="calc c-pl "+(pl>=0?"pos":"neg");
+    c[9].textContent=cost?pct(rate):"-"; c[9].className="calc c-rate "+(pl>=0?"pos":"neg");
+    tCost+=cost; tVal+=val;
+  });
+  const pl=tVal-tCost;
+  document.getElementById("h-cost").textContent=yen(tCost);
+  document.getElementById("h-val").textContent=yen(tVal);
+  const e=document.getElementById("h-pl"); e.textContent=yen(pl); e.className="calc "+(pl>=0?"pos":"neg");
+  const r=document.getElementById("h-rate"); r.textContent=tCost?pct(pl/tCost*100):"-"; r.className="calc "+(pl>=0?"pos":"neg");
+}
+
+/* ---------- キンカブ(金額指定取引) ---------- */
+const sh = n => (Math.round(n*10000)/10000).toLocaleString("ja-JP",{maximumFractionDigits:4})+"株";
+function addKin(d={}){
+  const tb=document.querySelector("#t-kin tbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.code||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.name||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.date||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.invest||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.buy||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.now||""}</td>
+    <td class="calc">-</td>
+    <td class="calc">¥0</td>
+    <td class="calc">¥0</td>
+    <td class="calc">0%</td>
+    <td class="act"><button class="btn-sm" onclick="openTradeKin(this)">取引</button><button class="del" onclick="delRow(this,calcKin)">削除</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcKin));
+  tr.children[0].addEventListener("blur",e=>autoName(e.target, tr.children[1], tr.children[5], calcKin));
+  calcKin();
+}
+function calcKin(){
+  let tCost=0,tVal=0;
+  document.querySelectorAll("#t-kin tbody tr").forEach(tr=>{
+    const c=tr.children, invest=num(c[3]),buy=num(c[4]),now=num(c[5]);
+    const qty=buy?invest/buy:0, val=qty*now, pl=val-invest, rate=invest?pl/invest*100:0;
+    c[6].textContent=buy?sh(qty):"-";
+    c[7].textContent=yen(val);
+    c[8].textContent=yen(pl); c[8].className="calc "+(pl>=0?"pos":"neg");
+    c[9].textContent=invest?pct(rate):"-"; c[9].className="calc "+(pl>=0?"pos":"neg");
+    tCost+=invest; tVal+=val;
+  });
+  const pl=tVal-tCost;
+  document.getElementById("k-val").textContent=yen(tVal);
+  const e=document.getElementById("k-pl"); e.textContent=yen(pl); e.className="calc "+(pl>=0?"pos":"neg");
+  const r=document.getElementById("k-rate"); r.textContent=tCost?pct(pl/tCost*100):"-"; r.className="calc "+(pl>=0?"pos":"neg");
+}
+async function fetchPricesKin(){
+  const btn=document.getElementById("btn-fetch-kin"), msg=document.getElementById("fetch-msg-kin");
+  const rows=[...document.querySelectorAll("#t-kin tbody tr")];
+  if(!rows.length){msg.textContent="銘柄がありません";return;}
+  btn.disabled=true; let ok=0,ng=[];
+  for(let i=0;i<rows.length;i++){
+    const c=rows[i].children, code=c[0].textContent.trim();
+    if(!code) continue;
+    msg.textContent=`取得中… ${i+1}/${rows.length} (${code})`;
+    const price=await getPrice(code);
+    if(price!=null){ c[5].textContent=price; ok++; c[5].style.background="#e8f6ee"; setTimeout(()=>c[5].style.background="",1200); }
+    else ng.push(code);
+    if(!c[1].textContent.trim()){ const jp=await getJpName(code); c[1].textContent=jp||""; }
+  }
+  calcKin(); saveLocal(); btn.disabled=false;
+  msg.textContent=`更新${ok}件`+(ng.length?` / 失敗: ${ng.join(", ")}`:"")+`  ${new Date().toLocaleTimeString("ja-JP")}`;
+}
+// キンカブの取引(金額指定)を記録し、売買履歴へ自動追加
+function openTradeKin(btn){
+  const tr=btn.closest("tr"), c=tr.children;
+  const code=c[0].textContent.trim(), name=c[1].textContent.trim();
+  const invest=num(c[3]), buy=num(c[4]), now=num(c[5]);
+  const curShares=buy?invest/buy:0;
+  const m=document.getElementById("trade-modal");
+  document.getElementById("tm-qtylabel").textContent="金額";
+  document.getElementById("tm-pricelabel").textContent="約定単価";
+  document.getElementById("tm-target").textContent=(code+" "+name).trim()+`（投資額 ${yen(invest)} / 取得単価 ${yen(buy)} / 約${sh(curShares)}）`;
+  const side=document.getElementById("tm-side"), amt=document.getElementById("tm-qty"),
+        price=document.getElementById("tm-price"), date=document.getElementById("tm-date");
+  side.value="売"; amt.value=""; price.value=now||buy||""; date.value=today();
+  m.classList.add("show");
+  const ok=document.getElementById("tm-ok"), cancel=document.getElementById("tm-cancel");
+  const close=()=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=null; };
+  cancel.onclick=close;
+  m.onclick=e=>{ if(e.target===m) close(); };
+  document.onkeydown=e=>{ if(e.key==="Escape") close(); };
+  ok.onclick=()=>{
+    const A=parseFloat(amt.value)||0, P=parseFloat(price.value)||0, s=side.value;
+    if(A<=0||P<=0){ alert("金額と約定単価を入力してください"); return; }
+    const shares=A/P;
+    if(s==="売" && shares>curShares+1e-6){ alert("保有を超えています（売却できる上限は約"+yen(curShares*P)+"）"); return; }
+    // 売買履歴へ: 株数=金額÷約定単価, 約定単価=P, 売却時は取得単価=buy
+    addTrade({date:date.value||today(), side:s, code, name,
+              qty:Math.round(shares*10000)/10000, price:P, acq:(s==="売"?buy:"")});
+    // キンカブ保有を更新
+    if(s==="買"){
+      const newInvest=invest+A, newShares=curShares+shares, newAvg=newShares?newInvest/newShares:0;
+      c[3].textContent=Math.round(newInvest); c[4].textContent=Math.round(newAvg);
+    }else{
+      const newInvest=invest-buy*shares;           // 取得原価ベースで減算(平均単価は不変)
+      if(curShares-shares<=1e-6 || newInvest<=0){ tr.remove(); }
+      else c[3].textContent=Math.round(newInvest);
+    }
+    calcKin(); calcTrade(); saveLocal(); close();
+    switchTab("trade");
+    flash(s==="売"?"売却を記録しました":"買い増しを記録しました");
+  };
+}
+
+/* ---------- 配当 ---------- */
+function addDiv(d={}){
+  const tb=document.querySelector("#t-div tbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.date||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.code||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.name||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.amt||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.memo||""}</td>
+    <td class="act"><button class="del" onclick="delRow(this,calcDiv)">削除</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcDiv));
+  tr.children[1].addEventListener("blur",e=>autoName(e.target, tr.children[2])); // コード→銘柄名 自動補完
+  calcDiv();
+}
+function calcDiv(){
+  let t=0; const byYear={};
+  document.querySelectorAll("#t-div tbody tr").forEach(tr=>{
+    const amt=num(tr.children[3]); t+=amt;
+    const m=(tr.children[0].textContent||"").match(/(\d{4})/); // 受取日から年を抽出
+    const y=m?m[1]:"日付なし"; byYear[y]=(byYear[y]||0)+amt;
+  });
+  document.getElementById("d-total").textContent=yen(t);
+  // 年ごとの集計を表示
+  const box=document.getElementById("div-year");
+  const years=Object.keys(byYear).sort().reverse();
+  box.innerHTML = years.length ? years.map(y=>`<div class="yr"><b>${y}年</b>${yen(byYear[y])}</div>`).join("") : "";
+}
+
+/* ---------- 売買 ---------- */
+function addTrade(d={}){
+  const tb=document.querySelector("#t-trade tbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.date||""}</td>
+    <td class="txt"><select><option ${d.side==="買"?"selected":""}>買</option><option ${d.side==="売"?"selected":""}>売</option></select></td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.code||""}</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.name||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.qty||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.price||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.acq||""}</td>
+    <td class="calc c-amt">¥0</td>
+    <td class="calc c-pl">-</td>
+    <td class="act"><button class="del" onclick="delRow(this,calcTrade)">削除</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcTrade));
+  tr.querySelector("select").addEventListener("change",calcTrade);
+  calcTrade();
+}
+function calcTrade(){
+  let tpl=0; const byYear={};
+  document.querySelectorAll("#t-trade tbody tr").forEach(tr=>{
+    const c=tr.children, side=c[1].querySelector("select").value;
+    const qty=num(c[4]),price=num(c[5]),acq=num(c[6]);
+    c[7].textContent=yen(qty*price);
+    if(side==="売"){
+      const pl=(price-acq)*qty;
+      c[8].textContent=acq?yen(pl):"取得単価入力"; c[8].className="calc c-pl "+(pl>=0?"pos":"neg");
+      if(acq){
+        tpl+=pl;
+        const m=(c[0].textContent||"").match(/(\d{4})/); const y=m?m[1]:"日付なし";
+        byYear[y]=(byYear[y]||0)+pl;
+      }
+    } else { c[8].textContent="-"; c[8].className="calc c-pl"; }
+  });
+  const e=document.getElementById("tr-pl"); e.textContent=yen(tpl); e.className="calc "+(tpl>=0?"pos":"neg");
+  // 年ごとの実現損益
+  const box=document.getElementById("trade-year");
+  const years=Object.keys(byYear).sort().reverse();
+  box.innerHTML = years.length ? years.map(y=>{
+    const v=byYear[y], cls=v>=0?"pos":"neg";
+    return `<div class="yr"><b>${y}年</b><span class="${cls}">${yen(v)}</span></div>`;
+  }).join("") : "";
+}
+
+/* ---------- 現在値 自動取得 ---------- */
+// 無料公開CORSプロキシ(複数用意してフォールバック)
+const PROXIES=[
+  u=>"https://api.codetabs.com/v1/proxy/?quest="+u,
+  u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+  u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
+  u=>"https://thingproxy.freeboard.io/fetch/"+u,
+];
+// タイムアウト付きfetch(固まったプロキシで止まらないように)
+async function pfetch(url,ms=9000){
+  const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),ms);
+  try{ return await fetch(url,{cache:"no-store",signal:ctl.signal}); }
+  finally{ clearTimeout(t); }
+}
+async function getQuote(code){
+  // 日本株: コード末尾 .T (例 7203.T)。為替なし。
+  const sym=/^\d{4}[A-Z0-9]?$/.test(code)?code+".T":code;
+  const url="https://query1.finance.yahoo.com/v8/finance/chart/"+sym+"?interval=1d&range=1d";
+  for(const p of PROXIES){
+    try{
+      const r=await pfetch(p(url));
+      if(!r.ok) continue;
+      const j=await r.json();
+      const m=j?.chart?.result?.[0]?.meta;
+      if(m){
+        return {price:(typeof m.regularMarketPrice==="number"?m.regularMarketPrice:null),
+                name:m.shortName||m.longName||null};
+      }
+    }catch(e){/* 次のプロキシへ */}
+  }
+  return null;
+}
+// 現在値を取得(認証不要のStooq優先 → Yahooフォールバック)
+async function getPrice(code){
+  if(/^\d{4}[A-Z0-9]?$/.test(code)){
+    const su="https://stooq.com/q/l/?s="+code.toLowerCase()+".jp&f=sl1&e=csv";
+    for(const p of PROXIES){
+      try{
+        const r=await pfetch(p(su)); if(!r.ok) continue;
+        const t=(await r.text()).trim();          // 例: "7203.JP,2768"
+        const v=parseFloat(t.substring(t.indexOf(",")+1).replace(/[^0-9.]/g,""));
+        if(v>0) return v;
+      }catch(e){/* 次へ */}
+    }
+  }
+  const q=await getQuote(code);                   // Yahoo APIフォールバック
+  return q && q.price!=null ? q.price : null;
+}
+// 日本語の銘柄名をYahoo!ファイナンス日本版のタイトルから取得
+async function getJpName(code){
+  const sym=/^\d{4}[A-Z0-9]?$/.test(code)?code+".T":code;
+  const url="https://finance.yahoo.co.jp/quote/"+sym;
+  for(const p of PROXIES){
+    try{
+      const r=await pfetch(p(url));
+      if(!r.ok) continue;
+      const html=await r.text();
+      const m=html.match(/<title>([^<]+)<\/title>/);
+      if(m){
+        // 例: "トヨタ自動車(株)【7203】：株価…" → "トヨタ自動車"
+        let name=m[1].split("【")[0].trim().replace(/[(（]株[)）]/g,"").trim();
+        if(name && !/Yahoo/.test(name)) return name;
+      }
+    }catch(e){/* 次のプロキシへ */}
+  }
+  return null;
+}
+// コード欄から銘柄名と現在値を自動補完(空の項目だけ補完)
+async function autoName(codeCell, nameCell, priceCell, recalc){
+  const tr=codeCell.closest("tr");
+  nameCell=nameCell||tr.children[1];
+  const code=codeCell.textContent.trim();
+  if(!code) return;
+  const needName = !nameCell.textContent.trim();
+  const needPrice = priceCell && !priceCell.textContent.trim();
+  if(!needName && !needPrice) return;
+  if(needName){ nameCell.textContent="取得中…"; nameCell.style.color="#999"; }
+  if(needPrice){ priceCell.textContent="…"; priceCell.style.color="#999"; }
+  // 銘柄名は日本語を優先
+  if(needName){
+    let name = await getJpName(code);
+    if(!name){ const q=await getQuote(code); name = q && q.name; }
+    nameCell.style.color="";
+    nameCell.textContent = name || "";
+  }
+  // 現在値(Stooq優先 → Yahoo)
+  if(needPrice){
+    const price = await getPrice(code);
+    priceCell.style.color="";
+    if(price!=null){
+      priceCell.textContent=price;
+      priceCell.style.background="#e8f6ee"; setTimeout(()=>priceCell.style.background="",1200);
+    } else priceCell.textContent="";
+  }
+  if(recalc) recalc();
+  saveLocal();
+}
+async function fetchPrices(){
+  const btn=document.getElementById("btn-fetch"), msg=document.getElementById("fetch-msg");
+  const rows=[...document.querySelectorAll("#t-hold tbody tr")];
+  if(!rows.length){msg.textContent="銘柄がありません";return;}
+  btn.disabled=true; let ok=0,ng=[];
+  for(let i=0;i<rows.length;i++){
+    const c=rows[i].children, code=c[0].textContent.trim();
+    if(!code){continue;}
+    msg.textContent=`取得中… ${i+1}/${rows.length} (${code})`;
+    const price=await getPrice(code);
+    if(price!=null){ c[5].textContent=price; ok++; c[5].style.background="#e8f6ee"; setTimeout(()=>c[5].style.background="",1200); }
+    else ng.push(code);
+    if(!c[1].textContent.trim()){ const jp=await getJpName(code); c[1].textContent=jp||""; }
+  }
+  calcHold(); saveLocal(); btn.disabled=false;
+  msg.textContent=`更新${ok}件`+(ng.length?` / 失敗: ${ng.join(", ")}(手入力してください)`:"")+`  ${new Date().toLocaleTimeString("ja-JP")}`;
+}
+
+/* ---------- サマリー ---------- */
+function renderSummary(){
+  let cost=0,val=0; const map={};
+  // 保有株とキンカブで同一銘柄を名寄せ(コード優先、なければ銘柄名で集約)
+  const addItem=(code,name,v)=>{
+    if(v<=0) return;
+    const key=(code||name||"(無名)").trim()||"(無名)";
+    if(!map[key]) map[key]={name:(name||code||"(無名)").trim()||"(無名)",val:0};
+    map[key].val+=v;
+  };
+  document.querySelectorAll("#t-hold tbody tr").forEach(tr=>{
+    const c=tr.children,qty=num(c[3]),buy=num(c[4]),now=num(c[5]);
+    cost+=qty*buy; val+=qty*now;
+    addItem(c[0].textContent.trim(),c[1].textContent.trim(),qty*now);
+  });
+  // キンカブ(金額指定)も保有資産として合算
+  document.querySelectorAll("#t-kin tbody tr").forEach(tr=>{
+    const c=tr.children,invest=num(c[3]),buy=num(c[4]),now=num(c[5]);
+    const qty=buy?invest/buy:0, v=qty*now;
+    cost+=invest; val+=v;
+    addItem(c[0].textContent.trim(),c[1].textContent.trim(),v);
+  });
+  const items=Object.values(map);
+  let real=0;
+  document.querySelectorAll("#t-trade tbody tr").forEach(tr=>{
+    const c=tr.children;
+    if(c[1].querySelector("select").value==="売"){const a=num(c[6]);if(a)real+=(num(c[5])-a)*num(c[4]);}
+  });
+  let dv=0;
+  document.querySelectorAll("#t-div tbody tr").forEach(tr=>dv+=num(tr.children[3]));
+  const evpl=val-cost, grand=evpl+real+dv;
+  const set=(id,v,sign)=>{const e=document.getElementById(id);e.textContent=yen(v);if(sign)e.className="v "+(v>=0?"pos":"neg");};
+  set("s-cost",cost);set("s-val",val);set("s-pl",evpl,1);set("s-real",real,1);set("s-div",dv);set("s-grand",grand,1);
+  // bar
+  const bar=document.getElementById("s-bar"),leg=document.getElementById("s-legend");
+  bar.innerHTML="";leg.innerHTML="";
+  const total=items.reduce((s,x)=>s+x.val,0);
+  if(total>0){
+    items.sort((a,b)=>b.val-a.val).forEach((x,i)=>{
+      const col=colors[i%colors.length],p=x.val/total*100;
+      bar.insertAdjacentHTML("beforeend",`<span style="width:${p}%;background:${col}"></span>`);
+      leg.insertAdjacentHTML("beforeend",`<div><i style="background:${col}"></i>${x.name} ${p.toFixed(1)}%</div>`);
+    });
+  } else bar.innerHTML='<span style="width:100%;background:#e3e8ef"></span>';
+}
+
+/* ---------- 保存/復元 ---------- */
+function gather(){
+  const g=sel=>[...document.querySelectorAll(sel)].map(tr=>[...tr.children].slice(0,-1).map(td=>{
+    const s=td.querySelector("select");return s?s.value:td.textContent;}));
+  return {hold:g("#t-hold tbody tr"),kin:g("#t-kin tbody tr"),div:g("#t-div tbody tr"),trade:g("#t-trade tbody tr")};
+}
+function saveLocal(){
+  localStorage.setItem("kabuData",JSON.stringify(gather()));
+  flash("💾 ブラウザに保存しました");
+}
+function loadLocal(){
+  const raw=localStorage.getItem("kabuData");if(!raw)return false;
+  apply(JSON.parse(raw));return true;
+}
+function apply(d){
+  document.querySelectorAll("#t-hold tbody tr,#t-kin tbody tr,#t-div tbody tr,#t-trade tbody tr").forEach(x=>x.remove());
+  (d.hold||[]).forEach(r=>{
+    // 旧フォーマット(買付日なし=5列)との互換
+    if(r.length<6) r=[r[0],r[1],"",r[2],r[3],r[4]];
+    addHold({code:r[0],name:r[1],date:r[2],qty:r[3],buy:r[4],now:r[5]});
+  });
+  (d.kin||[]).forEach(r=>addKin({code:r[0],name:r[1],date:r[2],invest:r[3],buy:r[4],now:r[5]}));
+  (d.div||[]).forEach(r=>addDiv({date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]}));
+  (d.trade||[]).forEach(r=>addTrade({date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6]}));
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(gather(),null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="株式管理_"+new Date().toISOString().slice(0,10)+".json";a.click();
+}
+function importJSON(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{try{apply(JSON.parse(e.target.result));saveLocal();flash("⬆ 読み込みました");}catch{alert("ファイルを読めませんでした");}};
+  r.readAsText(f);inp.value="";
+}
+function flash(msg){
+  const d=document.createElement("div");d.textContent=msg;
+  d.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f2540;color:#fff;padding:10px 20px;border-radius:8px;z-index:99;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.2)";
+  document.body.appendChild(d);setTimeout(()=>d.remove(),1800);
+}
+
+/* ---------- 入力セルでEnter=確定(改行しない) ---------- */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey && e.target.isContentEditable){
+    e.preventDefault();
+    e.target.blur(); // 改行せず確定
+  }
+});
+
+/* ---------- 自動保存 ---------- */
+document.addEventListener("input",()=>{clearTimeout(window._sv);window._sv=setTimeout(()=>localStorage.setItem("kabuData",JSON.stringify(gather())),800);});
+
+/* ---------- 初期化 ---------- */
+if(!loadLocal()){
+  addHold({code:"7203",name:"トヨタ自動車",date:"2026-01-15",qty:100,buy:2500,now:2780});
+  addHold({code:"9432",name:"NTT",date:"2026-02-20",qty:300,buy:150,now:158});
+  addKin({code:"9984",name:"ソフトバンクグループ",date:"2026-03-01",invest:10000,buy:9000,now:9500});
+  addDiv({date:"2026-06-15",code:"7203",name:"トヨタ自動車",amt:7600,memo:"中間配当"});
+  addTrade({date:"2026-03-10",side:"買",code:"9432",name:"NTT",qty:300,price:150,acq:""});
+}
+</script>
+</body>
+</html>
