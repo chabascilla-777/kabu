@@ -46,7 +46,7 @@
   .tbl-wrap{overflow:auto;max-height:70vh;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
   /* 各表の最小幅(狭い画面では銘柄名を残して横スクロール) */
-  #t-hold{min-width:1100px;} #t-kin{min-width:1120px;} #t-div{min-width:680px;} #t-trade{min-width:940px;}
+  #t-hold{min-width:1160px;} #t-kin{min-width:1180px;} #t-div{min-width:680px;} #t-trade{min-width:940px;}
   th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;overflow-wrap:anywhere;}
   thead th{position:sticky;top:0;z-index:3;}
   th{background:var(--accent-soft);color:var(--head);font-weight:600;white-space:nowrap;}
@@ -55,6 +55,7 @@
   th[data-dir=asc]::after{content:" ▲";font-size:10px;color:var(--accent);}
   th[data-dir=desc]::after{content:" ▼";font-size:10px;color:var(--accent);}
   td[data-ph]:empty::before{content:attr(data-ph);color:#c3ccd6;}
+  td[data-ph="¥0"]{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} /* 金額は折り返さない */
   td.nisa{text-align:center;padding:6px 4px;overflow:visible;}
   .nisa-toggle input{display:none;}
   .nisa-toggle span{display:inline-block;white-space:nowrap;padding:2px 9px;border:1px solid #d3dae2;border-radius:11px;color:#aab4c0;font-size:11px;font-weight:700;cursor:pointer;user-select:none;}
@@ -93,6 +94,10 @@
   .trade-form label{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink);gap:10px;}
   .trade-form input,.trade-form select{width:150px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;text-align:right;}
   .trade-form select{text-align:left;}
+  .trade-form label.tm-check{justify-content:flex-start;gap:7px;cursor:pointer;color:#b42318;font-weight:600;}
+  .trade-form label.tm-check input{width:auto;}
+  .trade-form input:disabled{background:#f1f4f8;color:#aeb8c4;}
+  .tm-hint{font-size:12px;color:var(--sub);margin:0 0 16px;min-height:16px;line-height:1.5;}
   select{font-size:13px;padding:3px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
   .kpi{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:14px;}
@@ -173,7 +178,7 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-hold">
-      <colgroup><col style="width:64px"><col><col style="width:106px"><col style="width:84px"><col style="width:84px"><col style="width:84px"><col style="width:92px"><col style="width:92px"><col style="width:104px"><col style="width:92px"><col style="width:74px"><col style="width:108px"></colgroup>
+      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:78px"><col style="width:100px"><col style="width:92px"><col style="width:112px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:104px"></colgroup>
       <thead><tr>
         <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
         <th>保有株数</th><th>取得単価</th><th>現在値</th>
@@ -210,7 +215,7 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-kin">
-      <colgroup><col style="width:64px"><col><col style="width:106px"><col style="width:90px"><col style="width:90px"><col style="width:84px"><col style="width:96px"><col style="width:92px"><col style="width:104px"><col style="width:92px"><col style="width:74px"><col style="width:108px"></colgroup>
+      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:110px"><col style="width:100px"><col style="width:92px"><col style="width:96px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:104px"></colgroup>
       <thead><tr>
         <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
         <th>投資額</th><th>約定単価</th><th>現在値</th>
@@ -340,6 +345,16 @@
         <li><b>資産サマリー</b>：全タブを集計し、取得総額・評価額・損益・配当・構成比を表示（保有株とキンカブの同一銘柄は名寄せ）。</li>
       </ul>
 
+      <h3>取引の記録（売却・買い増し）</h3>
+      <ul>
+        <li>保有株・キンカブの各行にある <span class="tag">取引</span> ボタンから、売却や買い増しを記録できます。</li>
+        <li><b>区分</b>で「売却」か「買い増し」を選びます。保有株は「株数」と「単価」、キンカブは「金額」と「約定単価」を入力します（キンカブは 金額÷約定単価 で株数を計算）。</li>
+        <li><b>全部売る</b>：売却を選ぶと表示される <span class="tag">☑ 全部売る</span> にチェックすると、保有をすべて売却します（端数も残らず、その行は消えます）。</li>
+        <li>入力欄の下のヒントに、確定前の結果（残り株数・実現損益など）が表示されます。</li>
+        <li><b>記録すると自動で売買履歴に追加</b>され、売買履歴タブに移動します。売却時は取得単価が引き継がれ、実現損益が計算されます。</li>
+        <li>売却すると保有株数（キンカブは投資額）が減り、買い増しすると平均取得単価が自動更新されます。</li>
+      </ul>
+
       <h3>データの保存とバックアップ</h3>
       <ul>
         <li>入力すると自動保存されます（右上 <span class="tag">💾 保存</span> で手動保存も可能）。</li>
@@ -371,10 +386,12 @@
     <p class="modal-body" id="tm-target" style="margin-bottom:14px;"></p>
     <div class="trade-form">
       <label>区分<select id="tm-side"><option value="売">売却</option><option value="買">買い増し</option></select></label>
+      <label class="tm-check" id="tm-all-wrap"><input type="checkbox" id="tm-all"><span>全部売る（保有をすべて売却）</span></label>
       <label><span id="tm-qtylabel">株数</span><input id="tm-qty" type="number" min="0"></label>
       <label><span id="tm-pricelabel">単価</span><input id="tm-price" type="number" min="0"></label>
       <label>日付<input id="tm-date" type="date"></label>
     </div>
+    <p class="tm-hint" id="tm-hint"></p>
     <div class="modal-actions">
       <button class="m-btn m-cancel" id="tm-cancel">キャンセル</button>
       <button class="m-btn m-ok" id="tm-ok">記録する</button>
@@ -437,17 +454,31 @@ function openTrade(btn){
   document.getElementById("tm-target").textContent=(code+" "+name).trim()+`（保有 ${curQty}株 / 取得単価 ${yen(curBuy)}）`;
   const side=document.getElementById("tm-side"), qty=document.getElementById("tm-qty"),
         price=document.getElementById("tm-price"), date=document.getElementById("tm-date");
-  side.value="売"; qty.value=curQty||""; price.value=now||curBuy||""; date.value=today();
+  side.value="売"; qty.value=""; price.value=now||curBuy||""; date.value=today();
+  const all=document.getElementById("tm-all"), allWrap=document.getElementById("tm-all-wrap"), hint=document.getElementById("tm-hint");
+  all.checked=false;
+  const refresh=()=>{
+    const selling=side.value==="売", useAll=selling&&all.checked;
+    allWrap.style.display=selling?"flex":"none";
+    qty.disabled=useAll;
+    const q=useAll?curQty:(parseFloat(qty.value)||0), p=parseFloat(price.value)||0;
+    if(!selling){ hint.textContent=q>0?`買い増し後の保有: ${curQty+q}株`:""; }
+    else if(useAll){ hint.textContent=`全部売却: ${curQty}株を売却 → 保有0（行が消えます）／ 実現損益 ${p?yen((p-curBuy)*curQty):"-"}`; }
+    else { hint.textContent=q>0?`売却: ${q}株 → 残り ${Math.max(curQty-q,0)}株 ／ 実現損益 ${p?yen((p-curBuy)*q):"-"}`:""; }
+  };
+  side.onchange=refresh; all.onchange=refresh; qty.oninput=refresh; price.oninput=refresh; refresh();
   m.classList.add("show");
   const ok=document.getElementById("tm-ok"), cancel=document.getElementById("tm-cancel");
-  const close=()=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=null; };
+  const close=()=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=side.onchange=all.onchange=qty.oninput=price.oninput=null; };
   cancel.onclick=close;
   m.onclick=e=>{ if(e.target===m) close(); };
   document.onkeydown=e=>{ if(e.key==="Escape") close(); };
   ok.onclick=()=>{
-    const q=parseFloat(qty.value)||0, p=parseFloat(price.value)||0, s=side.value;
-    if(q<=0){ alert("株数を入力してください"); return; }
-    if(s==="売" && q>curQty){ alert("保有株数を超えています"); return; }
+    const s=side.value, useAll=s==="売"&&all.checked;
+    const q=useAll?curQty:(parseFloat(qty.value)||0), p=parseFloat(price.value)||0;
+    if(p<=0){ alert("単価を入力してください"); return; }
+    if(!useAll && q<=0){ alert("株数を入力してください"); return; }
+    if(s==="売" && q>curQty+1e-9){ alert("保有株数を超えています"); return; }
     // 売買履歴へ追加(売却時は取得単価をセットして実現損益を計算)
     addTrade({date:date.value||today(), side:s, code, name, qty:q, price:p, acq:(s==="売"?curBuy:"")});
     // 保有株を更新
@@ -456,7 +487,7 @@ function openTrade(btn){
       c[3].textContent=newQty; c[4].textContent=Math.round(newAvg);
     }else{
       const newQty=curQty-q;
-      if(newQty<=0) tr.remove(); else c[3].textContent=newQty;
+      if(useAll || newQty<=0) tr.remove(); else c[3].textContent=newQty;
     }
     formatAllMoney(); calcHold(); calcTrade(); saveLocal(); close();
     switchTab("trade"); // 売買履歴タブへ移動
@@ -580,17 +611,35 @@ function openTradeKin(btn){
   const side=document.getElementById("tm-side"), amt=document.getElementById("tm-qty"),
         price=document.getElementById("tm-price"), date=document.getElementById("tm-date");
   side.value="売"; amt.value=""; price.value=now||buy||""; date.value=today();
+  const all=document.getElementById("tm-all"), allWrap=document.getElementById("tm-all-wrap"), hint=document.getElementById("tm-hint");
+  all.checked=false;
+  const refresh=()=>{
+    const selling=side.value==="売", useAll=selling&&all.checked;
+    allWrap.style.display=selling?"flex":"none";
+    amt.disabled=useAll;
+    const P=parseFloat(price.value)||0, A=parseFloat(amt.value)||0;
+    if(!selling){ hint.textContent=A>0?`買い増し後の投資額: ${yen(invest+A)}`:""; }
+    else if(useAll){ hint.textContent=`全部売却: 約${sh(curShares)}を売却 → 保有0（行が消えます）／ 実現損益 ${P?yen((P-buy)*curShares):"-"}`; }
+    else { const sc=P?A/P:0; hint.textContent=A>0&&P>0?`売却: 約${sh(sc)} ／ 実現損益 ${yen((P-buy)*sc)}`:""; }
+  };
+  side.onchange=refresh; all.onchange=refresh; amt.oninput=refresh; price.oninput=refresh; refresh();
   m.classList.add("show");
   const ok=document.getElementById("tm-ok"), cancel=document.getElementById("tm-cancel");
-  const close=()=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=null; };
+  const close=()=>{ m.classList.remove("show"); ok.onclick=cancel.onclick=m.onclick=document.onkeydown=side.onchange=all.onchange=amt.oninput=price.oninput=null; };
   cancel.onclick=close;
   m.onclick=e=>{ if(e.target===m) close(); };
   document.onkeydown=e=>{ if(e.key==="Escape") close(); };
   ok.onclick=()=>{
-    const A=parseFloat(amt.value)||0, P=parseFloat(price.value)||0, s=side.value;
-    if(A<=0||P<=0){ alert("金額と約定単価を入力してください"); return; }
-    const shares=A/P;
-    if(s==="売" && shares>curShares+1e-6){ alert("保有を超えています（売却できる上限は約"+yen(curShares*P)+"）"); return; }
+    const s=side.value, useAll=s==="売"&&all.checked, P=parseFloat(price.value)||0;
+    if(P<=0){ alert("約定単価を入力してください"); return; }
+    let A, shares;
+    if(useAll){ shares=curShares; A=shares*P; }
+    else {
+      A=parseFloat(amt.value)||0;
+      if(A<=0){ alert("金額を入力してください"); return; }
+      shares=A/P;
+      if(s==="売" && shares>curShares+1e-6){ alert("保有を超えています（売却できる上限は約"+yen(curShares*P)+"）"); return; }
+    }
     // 売買履歴へ: 株数=金額÷約定単価, 約定単価=P, 売却時は取得単価=buy
     addTrade({date:date.value||today(), side:s, code, name,
               qty:Math.round(shares*10000)/10000, price:P, acq:(s==="売"?buy:"")});
@@ -600,7 +649,7 @@ function openTradeKin(btn){
       c[3].textContent=Math.round(newInvest); c[4].textContent=Math.round(newAvg);
     }else{
       const newInvest=invest-buy*shares;           // 取得原価ベースで減算(平均単価は不変)
-      if(curShares-shares<=1e-6 || newInvest<=0){ tr.remove(); }
+      if(useAll || curShares-shares<=1e-6 || newInvest<=0){ tr.remove(); }
       else c[3].textContent=Math.round(newInvest);
     }
     formatAllMoney(); calcKin(); calcTrade(); saveLocal(); close();
@@ -700,9 +749,11 @@ async function pfetch(url,ms=9000){
   try{ return await fetch(url,{cache:"no-store",signal:ctl.signal}); }
   finally{ clearTimeout(t); }
 }
+// 日本株コード判定: 4桁数字(7203)＋新形式の3桁数字+英字(435A,316A)
+const isJpCode = c => /^\d{3}[0-9A-Z]$/i.test((c||"").trim());
 async function getQuote(code){
-  // 日本株: コード末尾 .T (例 7203.T)。為替なし。
-  const sym=/^\d{4}[A-Z0-9]?$/.test(code)?code+".T":code;
+  // 日本株: コード末尾 .T (例 7203.T / 435A.T)。為替なし。
+  const sym=isJpCode(code)?code.trim().toUpperCase()+".T":code;
   const url="https://query1.finance.yahoo.com/v8/finance/chart/"+sym+"?interval=1d&range=1d";
   for(const p of PROXIES){
     try{
@@ -720,8 +771,8 @@ async function getQuote(code){
 }
 // 現在値を取得(認証不要のStooq優先 → Yahooフォールバック)
 async function getPrice(code){
-  if(/^\d{4}[A-Z0-9]?$/.test(code)){
-    const su="https://stooq.com/q/l/?s="+code.toLowerCase()+".jp&f=sl1&e=csv";
+  if(isJpCode(code)){
+    const su="https://stooq.com/q/l/?s="+code.trim().toLowerCase()+".jp&f=sl1&e=csv";
     for(const p of PROXIES){
       try{
         const r=await pfetch(p(su)); if(!r.ok) continue;
@@ -736,7 +787,7 @@ async function getPrice(code){
 }
 // 日本語の銘柄名をYahoo!ファイナンス日本版のタイトルから取得
 async function getJpName(code){
-  const sym=/^\d{4}[A-Z0-9]?$/.test(code)?code+".T":code;
+  const sym=isJpCode(code)?code.trim().toUpperCase()+".T":code;
   const url="https://finance.yahoo.co.jp/quote/"+sym;
   for(const p of PROXIES){
     try{
