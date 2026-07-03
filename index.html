@@ -51,7 +51,11 @@
   .tbl-wrap{overflow:auto;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
   /* 各表の最小幅(狭い画面では銘柄名を残して横スクロール) */
-  #t-hold{min-width:1594px;} #t-kin{min-width:1260px;} #t-div{min-width:690px;} #t-trade{min-width:950px;}
+  #t-hold{min-width:1568px;} #t-kin{min-width:1234px;} #t-div{min-width:690px;} #t-trade{min-width:950px;}
+  /* 配当関連列の折りたたみ */
+  #t-hold.hide-div th.divcol, #t-hold.hide-div td.divcol{display:none;}
+  #t-hold.hide-div col.divcol{width:0;}
+  #t-hold.hide-div{min-width:1218px;}
   th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;overflow-wrap:anywhere;}
   thead th{position:sticky;top:0;z-index:3;}
   th{background:var(--accent-soft);color:var(--head);font-weight:600;white-space:nowrap;}
@@ -95,10 +99,9 @@
   .del{color:#b42318;cursor:pointer;font-weight:600;background:#fdecec;border:1px solid #f5cfcf;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;}
   .del:hover{background:#fbdcdc;}
   td.act{white-space:nowrap;text-align:center;vertical-align:middle;padding:6px 10px;}
-  .btn-upd{cursor:pointer;background:none;border:1px solid transparent;border-radius:6px;font-size:13px;padding:4px 7px;margin-right:4px;line-height:1;vertical-align:middle;}
-  .btn-upd:hover{background:#eef2f7;}
+  .btn-upd{cursor:pointer;background:#eef2f7;border:1px solid var(--line);border-radius:6px;font-size:12px;padding:4px 7px;margin-right:4px;line-height:1;}
+  .btn-upd:hover{background:#e2e8f1;}
   .btn-upd:disabled{opacity:.5;cursor:default;}
-  .btn-sm,.del{vertical-align:middle;}
   .btn-sm{color:var(--accent);cursor:pointer;font-weight:600;background:var(--accent-soft);border:1px solid #cfe0ff;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;margin-right:4px;}
   .btn-sm:hover{background:#e3edff;}
   .trade-form{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
@@ -188,8 +191,8 @@
       <button type="button" class="f-clear">クリア</button>
       <span class="f-count"></span>
     </div>
-    <div class="tbl-wrap"><table id="t-hold">
-      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:78px"><col style="width:100px"><col style="width:92px"><col style="width:112px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col class="divcol" style="width:96px"><col class="divcol" style="width:76px"><col class="divcol" style="width:98px"><col class="divcol" style="width:80px"><col style="width:70px"><col style="width:178px"></colgroup>
+    <div class="tbl-wrap"><table id="t-hold" class="hide-div">
+      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:78px"><col style="width:100px"><col style="width:92px"><col style="width:112px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col class="divcol" style="width:96px"><col class="divcol" style="width:76px"><col class="divcol" style="width:98px"><col class="divcol" style="width:80px"><col style="width:70px"><col style="width:152px"></colgroup>
       <thead><tr>
         <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
         <th>保有株数</th><th>取得単価</th><th>現在値</th>
@@ -209,6 +212,7 @@
     <div class="row-tools">
       <button class="btn" onclick="addHold({date:today()})">＋ 銘柄を追加</button>
       <button class="btn ghost" id="btn-fetch" onclick="fetchPrices()">🔄 現在値を自動更新</button>
+      <button class="btn ghost" id="btn-divcol" onclick="toggleDivCols()">＋ 配当列を表示</button>
       <span id="fetch-msg" style="color:var(--sub);font-size:12px;align-self:center;"></span>
     </div>
     <p class="note">※ コード欄(例:7203)を入力して欄を離れると、銘柄名と現在値を自動補完します（約15〜20分遅延）。<br>※ 各行の <span style="border:1px solid var(--line);border-radius:4px;padding:0 4px;">🔄</span> でその行だけ更新、「🔄現在値を自動更新」で全件更新。取得できない場合は手入力してください。</p>
@@ -228,7 +232,7 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-kin">
-      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:110px"><col style="width:100px"><col style="width:92px"><col style="width:96px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:178px"></colgroup>
+      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:110px"><col style="width:100px"><col style="width:92px"><col style="width:96px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:152px"></colgroup>
       <thead><tr>
         <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
         <th>投資額</th><th>約定単価</th><th>現在値</th>
@@ -384,6 +388,7 @@
       <h3>予想配当・資産推移・エクスポート</h3>
       <ul>
         <li><b>予想配当</b>：保有株の「予想1株配当」に年間の1株あたり配当を入れると、株数から予想利回りを自動計算します（サマリーに予想年間配当の合計も表示）。</li>
+        <li><b>配当列の折りたたみ</b>：保有株の <span class="tag">＋ 配当列を表示</span> ボタンで、年間配当・配当利回り・予想1株配当・予想利回りの列を表示／非表示に切り替えられます（初期は非表示で表を狭く保てます）。</li>
         <li><b>資産推移</b>：サマリー下部の <span class="tag">📸 今の資産を記録</span> で、その時点の評価総額を記録して折れ線グラフで推移を表示します（記録はバックアップにも含まれます）。</li>
         <li><b>CSV書き出し</b>：<span class="tag">売買履歴CSV</span> <span class="tag">配当CSV</span> でExcel用CSVを出力できます（確定申告や年間集計に）。</li>
         <li><b>税金の概算</b>：特定口座を前提に、実現損益（プラス時）へ20.315%で概算税を表示します（配当は税引後で記録するため対象外、NISA売却分は区別せず概算）。</li>
@@ -1133,8 +1138,10 @@ document.addEventListener("keydown",e=>{
     e.preventDefault();
     const table=e.target.closest("table");
     if(!table){ e.target.blur(); return; }
-    // 表示中の行のセルだけを対象にする(フィルターで非表示の行へ飛ばない)
-    const cells=[...table.querySelectorAll("td[contenteditable]")].filter(td=>td.closest("tr").style.display!=="none");
+    // 表示中の行・列のセルだけを対象にする(非表示の行や折りたたみ列へ飛ばない)
+    const collapsed=table.classList.contains("hide-div");
+    const cells=[...table.querySelectorAll("td[contenteditable]")].filter(td=>
+      td.closest("tr").style.display!=="none" && !(collapsed && td.classList.contains("divcol")));
     const i=cells.indexOf(e.target);
     if(i>=0 && i+1<cells.length){
       const next=cells[i+1];
@@ -1232,6 +1239,13 @@ document.querySelectorAll(".filters").forEach(bar=>{
     applyFilter(tid); // 条件を解除して全件表示
   });
 });
+
+/* ---------- 配当列の折りたたみ ---------- */
+function toggleDivCols(){
+  const t=document.getElementById("t-hold"), b=document.getElementById("btn-divcol");
+  const hidden=t.classList.toggle("hide-div"); // true=いま非表示
+  b.textContent = hidden ? "＋ 配当列を表示" : "− 配当列を隠す";
+}
 
 /* ---------- 並べ替え(ソート) ---------- */
 function makeSortable(tid){
