@@ -13,14 +13,16 @@
     --edit:#fffef7; --calc:#f7f9fc;
   }
   *{box-sizing:border-box;}
+  html,body{height:100%;}
   body{
     font-family:-apple-system,"Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;
     margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;
   }
   header{
     background:var(--head);color:#fff;padding:16px 22px;
     display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-    position:sticky;top:0;z-index:50;
+    position:sticky;top:0;z-index:50;flex-shrink:0;
   }
   header h1{font-size:18px;margin:0;letter-spacing:.04em;}
   header .tools{display:flex;gap:8px;flex-wrap:wrap;}
@@ -29,24 +31,27 @@
     padding:7px 12px;border-radius:7px;cursor:pointer;font-size:12.5px;
   }
   header button:hover{background:rgba(255,255,255,.22);}
-  .tabs{display:flex;gap:4px;padding:14px 22px 0;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);}
+  .tabs{display:flex;gap:4px;padding:14px 22px 0;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;}
   .tab{
     padding:9px 18px;border:1px solid var(--line);border-bottom:none;
     background:#e9edf3;border-radius:8px 8px 0 0;cursor:pointer;color:var(--sub);font-weight:600;
   }
   .tab.active{background:var(--card);color:var(--accent);}
-  main{padding:0 22px 40px;}
+  main{padding:0 22px 16px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
   .panel{
     display:none;background:var(--card);border:1px solid var(--line);
     border-radius:0 10px 10px 10px;padding:18px;
   }
-  .panel.active{display:block;}
+  .panel.active{display:flex;flex-direction:column;flex:1;min-height:0;}
+  .panel.active > *{flex:0 0 auto;}                 /* 上部・下部は固定サイズ */
+  .panel.active > .tbl-wrap{flex:1 1 auto;min-height:0;} /* 表だけ伸縮＆内部スクロール */
+  #p-sum.active,#p-help.active{display:block;flex:1;min-height:0;overflow-y:auto;} /* 集計/使い方はパネル全体をスクロール */
   .panel h2{font-size:15px;margin:0 0 4px;}
   .panel .desc{color:var(--sub);font-size:12.5px;margin:0 0 14px;}
-  .tbl-wrap{overflow:auto;max-height:70vh;-webkit-overflow-scrolling:touch;}
+  .tbl-wrap{overflow:auto;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
   /* 各表の最小幅(狭い画面では銘柄名を残して横スクロール) */
-  #t-hold{min-width:1160px;} #t-kin{min-width:1180px;} #t-div{min-width:680px;} #t-trade{min-width:940px;}
+  #t-hold{min-width:1594px;} #t-kin{min-width:1260px;} #t-div{min-width:690px;} #t-trade{min-width:950px;}
   th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;overflow-wrap:anywhere;}
   thead th{position:sticky;top:0;z-index:3;}
   th{background:var(--accent-soft);color:var(--head);font-weight:600;white-space:nowrap;}
@@ -58,8 +63,10 @@
   td[data-ph="¥0"]{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} /* 金額は折り返さない */
   td.nisa{text-align:center;padding:6px 4px;overflow:visible;}
   .nisa-toggle input{display:none;}
-  .nisa-toggle span{display:inline-block;white-space:nowrap;padding:2px 9px;border:1px solid #d3dae2;border-radius:11px;color:#aab4c0;font-size:11px;font-weight:700;cursor:pointer;user-select:none;}
+  .nisa-toggle span{display:inline-block;white-space:nowrap;min-width:42px;text-align:center;padding:2px 9px;border:1px solid #cbd5e1;border-radius:11px;background:#eef2f7;color:#64748b;font-size:11px;font-weight:700;cursor:pointer;user-select:none;}
+  .nisa-toggle span::after{content:"特定";}                          /* デフォルト:特定口座 */
   .nisa-toggle input:checked + span{background:#16a34a;border-color:#16a34a;color:#fff;}
+  .nisa-toggle input:checked + span::after{content:"NISA";}          /* 押すとNISA */
   td.txt,th.txt{text-align:left;}
   td.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   td.nm:focus{overflow:visible;text-overflow:clip;} /* 編集中は全体表示 */
@@ -87,7 +94,11 @@
   .btn.ghost{background:#eef2f7;color:var(--ink);border:1px solid var(--line);}
   .del{color:#b42318;cursor:pointer;font-weight:600;background:#fdecec;border:1px solid #f5cfcf;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;}
   .del:hover{background:#fbdcdc;}
-  td.act{white-space:nowrap;text-align:center;vertical-align:middle;padding:6px;}
+  td.act{white-space:nowrap;text-align:center;vertical-align:middle;padding:6px 10px;}
+  .btn-upd{cursor:pointer;background:none;border:1px solid transparent;border-radius:6px;font-size:13px;padding:4px 7px;margin-right:4px;line-height:1;vertical-align:middle;}
+  .btn-upd:hover{background:#eef2f7;}
+  .btn-upd:disabled{opacity:.5;cursor:default;}
+  .btn-sm,.del{vertical-align:middle;}
   .btn-sm{color:var(--accent);cursor:pointer;font-weight:600;background:var(--accent-soft);border:1px solid #cfe0ff;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;margin-right:4px;}
   .btn-sm:hover{background:#e3edff;}
   .trade-form{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
@@ -170,7 +181,7 @@
     <p class="desc">取得単価と現在値を入力すると、評価額・評価損益・損益率を自動計算します。黄色のセルが入力欄です。</p>
     <div class="filters" data-tid="t-hold">
       <input type="search" class="f-kw" placeholder="銘柄名・コードで検索">
-      <select class="f-nisa"><option value="">NISA:すべて</option><option value="1">NISAのみ</option><option value="0">課税のみ</option></select>
+      <select class="f-nisa"><option value="">NISA:すべて</option><option value="1">NISAのみ</option><option value="0">特定のみ</option></select>
       <select class="f-pl"><option value="">損益:すべて</option><option value="pos">プラス</option><option value="neg">マイナス</option></select>
       <select class="f-year"><option value="">年:すべて</option></select>
       <button type="button" class="f-search">検索</button>
@@ -178,11 +189,11 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-hold">
-      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:78px"><col style="width:100px"><col style="width:92px"><col style="width:112px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:104px"></colgroup>
+      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:78px"><col style="width:100px"><col style="width:92px"><col style="width:112px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col class="divcol" style="width:96px"><col class="divcol" style="width:76px"><col class="divcol" style="width:98px"><col class="divcol" style="width:80px"><col style="width:70px"><col style="width:178px"></colgroup>
       <thead><tr>
         <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
         <th>保有株数</th><th>取得単価</th><th>現在値</th>
-        <th>取得額</th><th>評価額</th><th>評価損益</th><th>損益率</th><th>NISA</th><th></th>
+        <th>取得額</th><th>評価額</th><th>評価損益</th><th>損益率</th><th class="divcol">年間配当</th><th class="divcol">配当利回り</th><th class="divcol">予想1株配当</th><th class="divcol">予想利回り</th><th>口座</th><th></th>
       </tr></thead>
       <tbody></tbody>
       <tfoot><tr>
@@ -190,7 +201,9 @@
         <td id="h-cost" class="calc">¥0</td>
         <td id="h-val" class="calc">¥0</td>
         <td id="h-pl" class="calc">¥0</td>
-        <td id="h-rate" class="calc">0%</td><td></td><td></td>
+        <td id="h-rate" class="calc">0%</td>
+        <td id="h-div" class="calc divcol">¥0</td><td id="h-dyield" class="calc divcol">-</td>
+        <td class="divcol"></td><td id="h-fyield" class="calc divcol">-</td><td></td><td></td>
       </tr></tfoot>
     </table></div>
     <div class="row-tools">
@@ -198,7 +211,7 @@
       <button class="btn ghost" id="btn-fetch" onclick="fetchPrices()">🔄 現在値を自動更新</button>
       <span id="fetch-msg" style="color:var(--sub);font-size:12px;align-self:center;"></span>
     </div>
-    <p class="note">※ コード欄(例:7203)を入力して欄を離れると、銘柄名と現在値を自動補完します（約15〜20分遅延）。<br>※ まとめて更新したいときは「🔄現在値を自動更新」。取得できない場合は手入力してください。</p>
+    <p class="note">※ コード欄(例:7203)を入力して欄を離れると、銘柄名と現在値を自動補完します（約15〜20分遅延）。<br>※ 各行の <span style="border:1px solid var(--line);border-radius:4px;padding:0 4px;">🔄</span> でその行だけ更新、「🔄現在値を自動更新」で全件更新。取得できない場合は手入力してください。</p>
   </section>
 
   <!-- キンカブ(金額指定取引) -->
@@ -207,7 +220,7 @@
     <p class="desc">株数ではなく「金額」で売買する取引用です。投資額と約定単価を入力すると、保有株数（小数）・評価額・損益を自動計算します。</p>
     <div class="filters" data-tid="t-kin">
       <input type="search" class="f-kw" placeholder="銘柄名・コードで検索">
-      <select class="f-nisa"><option value="">NISA:すべて</option><option value="1">NISAのみ</option><option value="0">課税のみ</option></select>
+      <select class="f-nisa"><option value="">NISA:すべて</option><option value="1">NISAのみ</option><option value="0">特定のみ</option></select>
       <select class="f-pl"><option value="">損益:すべて</option><option value="pos">プラス</option><option value="neg">マイナス</option></select>
       <select class="f-year"><option value="">年:すべて</option></select>
       <button type="button" class="f-search">検索</button>
@@ -215,11 +228,11 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-kin">
-      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:110px"><col style="width:100px"><col style="width:92px"><col style="width:96px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:104px"></colgroup>
+      <colgroup><col style="width:60px"><col><col style="width:104px"><col style="width:110px"><col style="width:100px"><col style="width:92px"><col style="width:96px"><col style="width:112px"><col style="width:112px"><col style="width:90px"><col style="width:70px"><col style="width:178px"></colgroup>
       <thead><tr>
         <th class="txt">コード</th><th class="txt">銘柄名</th><th class="txt">買付日</th>
         <th>投資額</th><th>約定単価</th><th>現在値</th>
-        <th>保有株数</th><th>評価額</th><th>評価損益</th><th>損益率</th><th>NISA</th><th></th>
+        <th>保有株数</th><th>評価額</th><th>評価損益</th><th>損益率</th><th>口座</th><th></th>
       </tr></thead>
       <tbody></tbody>
       <tfoot><tr>
@@ -250,7 +263,7 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-div">
-      <colgroup><col style="width:112px"><col style="width:72px"><col><col style="width:120px"><col style="width:180px"><col style="width:60px"></colgroup>
+      <colgroup><col style="width:112px"><col style="width:72px"><col><col style="width:120px"><col style="width:180px"><col style="width:68px"></colgroup>
       <thead><tr>
         <th class="txt">受取日</th><th class="txt">コード</th><th class="txt">銘柄名</th>
         <th>受取額(税引後)</th><th class="txt">メモ</th><th></th>
@@ -275,7 +288,7 @@
       <span class="f-count"></span>
     </div>
     <div class="tbl-wrap"><table id="t-trade">
-      <colgroup><col style="width:106px"><col style="width:64px"><col style="width:70px"><col><col style="width:80px"><col style="width:96px"><col style="width:120px"><col style="width:100px"><col style="width:104px"><col style="width:60px"></colgroup>
+      <colgroup><col style="width:106px"><col style="width:64px"><col style="width:70px"><col><col style="width:80px"><col style="width:96px"><col style="width:120px"><col style="width:100px"><col style="width:104px"><col style="width:68px"></colgroup>
       <thead><tr>
         <th class="txt">日付</th><th class="txt">区分</th><th class="txt">コード</th><th class="txt">銘柄名</th>
         <th>株数</th><th>約定単価</th><th>売却時:取得単価</th><th>受渡金額</th><th>実現損益</th><th></th>
@@ -298,13 +311,32 @@
       <div class="kpi"><div class="l">実現損益</div><div class="v" id="s-real">¥0</div></div>
       <div class="kpi"><div class="l">受取配当 合計</div><div class="v" id="s-div">¥0</div></div>
       <div class="kpi"><div class="l">総合損益(評価+実現+配当)</div><div class="v" id="s-grand">¥0</div></div>
+      <div class="kpi"><div class="l">配当利回り(受取÷取得)</div><div class="v" id="s-yield">-</div></div>
+      <div class="kpi"><div class="l">予想年間配当(1株配当ベース)</div><div class="v" id="s-fdiv">¥0</div></div>
+      <div class="kpi"><div class="l">実現損益の概算税(20.315%)</div><div class="v" id="s-tax">¥0</div></div>
+      <div class="kpi"><div class="l">税引後の実現損益(概算)</div><div class="v" id="s-net">¥0</div></div>
     </div>
     <h2 style="margin-top:8px;">ポートフォリオ構成比(評価額)</h2>
     <div class="bar" id="s-bar"></div>
     <div class="legend" id="s-legend"></div>
+
+    <h2 style="margin-top:14px;">資産推移</h2>
+    <div class="row-tools">
+      <button class="btn" onclick="recordSnapshot()">📸 今の資産を記録</button>
+      <span id="hist-msg" style="color:var(--sub);font-size:12px;align-self:center;"></span>
+    </div>
+    <div id="hist-chart" style="margin-top:12px;"></div>
+    <div id="hist-list" class="year-sum" style="margin-top:10px;"></div>
+
+    <h2 style="margin-top:14px;">エクスポート（確定申告など）</h2>
+    <div class="row-tools">
+      <button class="btn ghost" onclick="exportCSV('trade')">⬇ 売買履歴CSV</button>
+      <button class="btn ghost" onclick="exportCSV('div')">⬇ 配当CSV</button>
+    </div>
+
     <p class="note">
-      ※ 現在値は各タブの「🔄現在値を自動更新」で取得できます（約15〜20分遅延）。手入力も可能です。<br>
-      ※ データはお使いのブラウザ内に自動保存されます(💾保存)。別PCへ移す場合は「⬇バックアップ」でJSONを書き出し、「⬆読込」で復元できます。
+      ※ 税金は概算です。特定口座を前提に、実現損益（プラス時）へ20.315%で計算しています。NISA売却分は非課税ですが売買履歴では区別しないため概算に含まれます。配当は「税引後」で記録するため税計算の対象外です。<br>
+      ※ CSVはExcelで開けます（UTF-8）。データはブラウザ内に自動保存され、「⬇バックアップ」で資産推移も含めて書き出せます。
     </p>
   </section>
 
@@ -317,6 +349,7 @@
       <h3>基本操作</h3>
       <ul>
         <li><b>入力</b>：黄色いセルをクリックして数値や文字を入力します。グレーのセルは自動計算（編集不可）。空欄には入力例（例 <span class="tag">2026-00-00</span> や <span class="tag">¥0</span>）が薄く表示されます。</li>
+        <li><b>自動整形</b>：金額欄は数字を入れて欄を離れると「¥」とカンマが付きます（例 2500→¥2,500）。日付欄は「20260701」や「2026/7/1」を入れると「2026-07-01」に整形されます。</li>
         <li><b>Enterで次のセルへ</b>：入力後 <span class="tag">Enter</span> を押すと確定して次の入力セルへ移動します（改行はされません）。</li>
         <li><b>追加</b>：各タブ下部の <span class="tag">＋ 追加</span> ボタンで行を増やせます。保有株・キンカブの買付日には今日の日付が自動で入ります。</li>
         <li><b>削除</b>：行右の <span class="tag">削除</span> ボタン。確認ダイアログが出ます。</li>
@@ -326,23 +359,34 @@
 
       <h3>銘柄名・現在値の自動取得</h3>
       <ul>
-        <li><b>自動補完</b>：コード欄（例 7203）を入力して欄を離れると、日本語の銘柄名と現在値が自動で入ります。</li>
-        <li><b>まとめて更新</b>：<span class="tag">🔄 現在値を自動更新</span> で全銘柄の株価を一括取得します（約15〜20分遅延）。</li>
+        <li><b>自動補完</b>：コード欄（例 7203、新形式の 435A なども可）を入力して欄を離れると、日本語の銘柄名と現在値が自動で入ります。</li>
+        <li><b>1行だけ更新</b>：保有株・キンカブの各行の <span class="tag">🔄</span> ボタンで、その行の現在値だけを更新できます。</li>
+        <li><b>まとめて更新</b>：<span class="tag">🔄 現在値を自動更新</span> で全銘柄の株価を一括取得します（約15〜20分遅延）。取得できない銘柄は手入力してください。</li>
       </ul>
 
       <h3>絞り込み（フィルター）</h3>
       <ul>
         <li>各表の上でキーワード（銘柄名・コード）、NISA、損益（プラス／マイナス）、年を指定し、<span class="tag">検索</span> ボタンで絞り込みます（キーワード欄はEnterでも可）。</li>
         <li><span class="tag">クリア</span> で条件を解除して全件表示に戻ります。右側に表示件数が出ます。</li>
+        <li>ページを開いた時は各タブの年フィルターが「今年」に初期設定されます。過去の年や全件を見たいときは年を変えるか「クリア」してください。</li>
+        <li>フィルターをかけると、合計・資産サマリーも表示中の行だけで再計算されます。</li>
       </ul>
 
       <h3>各タブの説明</h3>
       <ul>
-        <li><b>保有株 損益</b>：株数で保有する銘柄を管理。取得単価（1株を買った値段）と現在値から評価損益を自動計算。<span class="tag">取引</span> ボタンで売却・買い増しを記録すると自動で売買履歴に移動します。NISAで買った株は <span class="tag">NISA</span> バッジをクリックして印を付けられます。</li>
-        <li><b>キンカブ</b>：株数ではなく「金額」で売買する取引用。投資額と約定単価から保有株数（小数）を逆算。<span class="tag">取引</span> では金額を入力して売買します。NISAバッジも付けられます。</li>
+        <li><b>保有株 損益</b>：株数で保有する銘柄を管理。取得単価（1株を買った値段）と現在値から評価損益を自動計算。<span class="tag">取引</span> ボタンで売却・買い増しを記録すると自動で売買履歴に移動します。「口座」欄のバッジをクリックすると <span class="tag">特定</span> ⇄ <span class="tag">NISA</span> を切り替えられます（初期値は特定）。配当タブに記録があれば、銘柄ごとの「年間配当」と「配当利回り」も自動表示されます。</li>
+        <li><b>キンカブ</b>：株数ではなく「金額」で売買する取引用。投資額と約定単価から保有株数（小数）を逆算。<span class="tag">取引</span> では金額を入力して売買します。「口座」欄で特定⇄NISAを切り替えられます。</li>
         <li><b>配当金</b>：受け取った配当を記録。全期間合計と年ごとの合計を表示します。</li>
         <li><b>売買履歴</b>：売買の記録。「売」を選び取得単価を入れると実現損益を計算。年ごとの実現損益も表示（確定申告の目安に）。</li>
-        <li><b>資産サマリー</b>：全タブを集計し、取得総額・評価額・損益・配当・構成比を表示（保有株とキンカブの同一銘柄は名寄せ）。</li>
+        <li><b>資産サマリー</b>：全タブを集計し、取得総額・評価額・損益・配当・構成比を表示（保有株とキンカブの同一銘柄は名寄せ）。配当利回り・予想年間配当・実現損益の概算税(20.315%)も表示。各タブのフィルターで表示中の行のみ集計します。</li>
+      </ul>
+
+      <h3>予想配当・資産推移・エクスポート</h3>
+      <ul>
+        <li><b>予想配当</b>：保有株の「予想1株配当」に年間の1株あたり配当を入れると、株数から予想利回りを自動計算します（サマリーに予想年間配当の合計も表示）。</li>
+        <li><b>資産推移</b>：サマリー下部の <span class="tag">📸 今の資産を記録</span> で、その時点の評価総額を記録して折れ線グラフで推移を表示します（記録はバックアップにも含まれます）。</li>
+        <li><b>CSV書き出し</b>：<span class="tag">売買履歴CSV</span> <span class="tag">配当CSV</span> でExcel用CSVを出力できます（確定申告や年間集計に）。</li>
+        <li><b>税金の概算</b>：特定口座を前提に、実現損益（プラス時）へ20.315%で概算税を表示します（配当は税引後で記録するため対象外、NISA売却分は区別せず概算）。</li>
       </ul>
 
       <h3>取引の記録（売却・買い増し）</h3>
@@ -353,6 +397,7 @@
         <li>入力欄の下のヒントに、確定前の結果（残り株数・実現損益など）が表示されます。</li>
         <li><b>記録すると自動で売買履歴に追加</b>され、売買履歴タブに移動します。売却時は取得単価が引き継がれ、実現損益が計算されます。</li>
         <li>売却すると保有株数（キンカブは投資額）が減り、買い増しすると平均取得単価が自動更新されます。</li>
+        <li><b>取得単価の自動補完</b>：売買履歴で直接「売」の行を追加してコードを入れると、保有株・キンカブの平均取得単価が自動で入ります。</li>
       </ul>
 
       <h3>データの保存とバックアップ</h3>
@@ -499,7 +544,7 @@ function switchTab(t){
   document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.t===t));
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
   document.getElementById("p-"+t).classList.add("active");
-  if(t==="sum") renderSummary();
+  if(t==="sum"){ renderSummary(); drawHistory(); }
   else if(FILTER_CFG["t-"+t]){ populateYears("t-"+t); applyFilter("t-"+t); } // タブ表示時に絞り込みを反映
 }
 
@@ -518,28 +563,52 @@ function addHold(d={}){
     <td class="calc c-val">¥0</td>
     <td class="calc c-pl">¥0</td>
     <td class="calc c-rate">0%</td>
-    <td class="nisa"><label class="nisa-toggle"><input type="checkbox" ${d.nisa?"checked":""}><span>NISA</span></label></td>
-    <td class="act"><button class="btn-sm" onclick="openTrade(this)">取引</button><button class="del" onclick="delRow(this,calcHold)">削除</button></td>`;
+    <td class="calc c-adiv divcol">-</td>
+    <td class="calc c-yield divcol">-</td>
+    <td class="divcol" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false" data-ph="¥0">${d.edps||""}</td>
+    <td class="calc c-fyield divcol">-</td>
+    <td class="nisa"><label class="nisa-toggle"><input type="checkbox" ${d.nisa?"checked":""}><span></span></label></td>
+    <td class="act"><button class="btn-upd" onclick="updateOneRow(this)" title="この行の現在値を更新">🔄</button><button class="btn-sm" onclick="openTrade(this)">取引</button><button class="del" onclick="delRow(this,calcHold)">削除</button></td>`;
   tb.appendChild(tr);
   tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcHold));
   tr.children[0].addEventListener("blur",e=>autoName(e.target, tr.children[1], tr.children[5], calcHold)); // コード→銘柄名・現在値を自動補完
   calcHold();
 }
+// 配当タブから、今年の受取配当を銘柄コードごとに集計
+function divByCodeThisYear(){
+  const cy=String(new Date().getFullYear()), map={};
+  document.querySelectorAll("#t-div tbody tr").forEach(tr=>{
+    const dc=tr.children[1].textContent.trim(), dm=(tr.children[0].textContent||"").match(/(\d{4})/);
+    if(dc && dm && dm[1]===cy) map[dc]=(map[dc]||0)+num(tr.children[3]);
+  });
+  return map;
+}
 function calcHold(){
-  let tCost=0,tVal=0;
+  let tCost=0,tVal=0,tDiv=0,tFdiv=0;
+  const divMap=divByCodeThisYear();
   document.querySelectorAll("#t-hold tbody tr").forEach(tr=>{
     const c=tr.children, qty=num(c[3]),buy=num(c[4]),now=num(c[5]);
     const cost=qty*buy, val=qty*now, pl=val-cost, rate=cost?pl/cost*100:0;
     c[6].textContent=yen(cost); c[7].textContent=yen(val);
     c[8].textContent=yen(pl); c[8].className="calc c-pl "+(pl>=0?"pos":"neg");
     c[9].textContent=cost?pct(rate):"-"; c[9].className="calc c-rate "+(pl>=0?"pos":"neg");
-    if(tr.style.display!=="none"){ tCost+=cost; tVal+=val; } // 表示中の行のみ合計
+    // 年間配当(今年の実績)・配当利回り(取得額ベース)
+    const adiv=divMap[c[0].textContent.trim()]||0;
+    c[10].textContent = adiv>0 ? yen(adiv) : "-";
+    c[11].textContent = (adiv>0 && cost>0) ? (adiv/cost*100).toFixed(2)+"%" : "-";
+    // 予想配当(1株配当×株数)・予想利回り(取得額ベース)
+    const edps=num(c[12]), fdiv=qty*edps;
+    c[13].textContent = (fdiv>0 && cost>0) ? (fdiv/cost*100).toFixed(2)+"%" : "-";
+    if(tr.style.display!=="none"){ tCost+=cost; tVal+=val; tDiv+=adiv; tFdiv+=fdiv; } // 表示中の行のみ合計
   });
   const pl=tVal-tCost;
   document.getElementById("h-cost").textContent=yen(tCost);
   document.getElementById("h-val").textContent=yen(tVal);
   const e=document.getElementById("h-pl"); e.textContent=yen(pl); e.className="calc "+(pl>=0?"pos":"neg");
   const r=document.getElementById("h-rate"); r.textContent=tCost?pct(pl/tCost*100):"-"; r.className="calc "+(pl>=0?"pos":"neg");
+  document.getElementById("h-div").textContent=yen(tDiv);
+  document.getElementById("h-dyield").textContent=(tDiv>0&&tCost>0)?(tDiv/tCost*100).toFixed(2)+"%":"-";
+  document.getElementById("h-fyield").textContent=(tFdiv>0&&tCost>0)?(tFdiv/tCost*100).toFixed(2)+"%":"-";
 }
 
 /* ---------- キンカブ(金額指定取引) ---------- */
@@ -558,8 +627,8 @@ function addKin(d={}){
     <td class="calc">¥0</td>
     <td class="calc">¥0</td>
     <td class="calc">0%</td>
-    <td class="nisa"><label class="nisa-toggle"><input type="checkbox" ${d.nisa?"checked":""}><span>NISA</span></label></td>
-    <td class="act"><button class="btn-sm" onclick="openTradeKin(this)">取引</button><button class="del" onclick="delRow(this,calcKin)">削除</button></td>`;
+    <td class="nisa"><label class="nisa-toggle"><input type="checkbox" ${d.nisa?"checked":""}><span></span></label></td>
+    <td class="act"><button class="btn-upd" onclick="updateOneRow(this)" title="この行の現在値を更新">🔄</button><button class="btn-sm" onclick="openTradeKin(this)">取引</button><button class="del" onclick="delRow(this,calcKin)">削除</button></td>`;
   tb.appendChild(tr);
   tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcKin));
   tr.children[0].addEventListener("blur",e=>autoName(e.target, tr.children[1], tr.children[5], calcKin));
@@ -581,22 +650,45 @@ function calcKin(){
   const e=document.getElementById("k-pl"); e.textContent=yen(pl); e.className="calc "+(pl>=0?"pos":"neg");
   const r=document.getElementById("k-rate"); r.textContent=tCost?pct(pl/tCost*100):"-"; r.className="calc "+(pl>=0?"pos":"neg");
 }
-async function fetchPricesKin(){
-  const btn=document.getElementById("btn-fetch-kin"), msg=document.getElementById("fetch-msg-kin");
-  const rows=[...document.querySelectorAll("#t-kin tbody tr")];
-  if(!rows.length){msg.textContent="銘柄がありません";return;}
-  btn.disabled=true; let ok=0,ng=[];
-  for(let i=0;i<rows.length;i++){
-    const c=rows[i].children, code=c[0].textContent.trim();
-    if(!code) continue;
-    msg.textContent=`取得中… ${i+1}/${rows.length} (${code})`;
+// 同時実行数を制限した並列処理プール
+async function runPool(items, worker, concurrency=6){
+  let i=0;
+  await Promise.all(Array.from({length:Math.min(concurrency,items.length)}, async ()=>{
+    while(i<items.length){ const idx=i++; await worker(items[idx]); }
+  }));
+}
+// 現在値の一括更新(並列)。tid・ボタン・メッセージ・再計算関数を受け取る共通処理
+async function updatePrices(tid, btnId, msgId, calcFn){
+  const btn=document.getElementById(btnId), msg=document.getElementById(msgId);
+  const rows=[...document.querySelectorAll("#"+tid+" tbody tr")].filter(tr=>tr.children[0].textContent.trim());
+  if(!rows.length){ msg.textContent="銘柄がありません"; return; }
+  btn.disabled=true; let done=0,ok=0; const ng=[], total=rows.length;
+  msg.textContent=`取得中… 0/${total}`;
+  await runPool(rows, async (tr)=>{
+    const c=tr.children, code=c[0].textContent.trim();
     const price=await getPrice(code);
-    if(price!=null){ c[5].textContent=price; ok++; c[5].style.background="#e8f6ee"; setTimeout(()=>c[5].style.background="",1200); }
+    if(price!=null){ c[5].textContent=price; fmtMoney(c[5]); ok++; c[5].style.background="#e8f6ee"; setTimeout(()=>c[5].style.background="",1200); }
     else ng.push(code);
-    if(!c[1].textContent.trim()){ const jp=await getJpName(code); c[1].textContent=jp||""; }
-  }
-  formatAllMoney(); calcKin(); saveLocal(); applyFilter("t-kin"); btn.disabled=false;
+    if(!c[1].textContent.trim()){ const jp=await getJpName(code); if(jp) c[1].textContent=jp; }
+    done++; msg.textContent=`取得中… ${done}/${total}`;
+  }, 6);
+  calcFn(); saveLocal(); applyFilter(tid); btn.disabled=false;
   msg.textContent=`更新${ok}件`+(ng.length?` / 失敗: ${ng.join(", ")}`:"")+`  ${new Date().toLocaleTimeString("ja-JP")}`;
+}
+function fetchPricesKin(){ return updatePrices("t-kin","btn-fetch-kin","fetch-msg-kin",calcKin); }
+// 1行だけ現在値を更新(保有株・キンカブ共通、現在値は index 5)
+async function updateOneRow(btn){
+  const tr=btn.closest("tr"), c=tr.children, code=c[0].textContent.trim();
+  const isKin=tr.closest("table").id==="t-kin", recalc=isKin?calcKin:calcHold, tid=isKin?"t-kin":"t-hold";
+  if(!code){ flash("コードを入力してください"); return; }
+  const price5=c[5], prev=price5.textContent; // 失敗時に元へ戻すため保持
+  btn.disabled=true; price5.textContent="…"; price5.style.color="#999";
+  const price=await getPrice(code);
+  price5.style.color="";
+  if(price!=null){ price5.textContent=price; fmtMoney(price5); price5.style.background="#e8f6ee"; setTimeout(()=>price5.style.background="",1200); }
+  else { price5.textContent=prev; flash(code+" の現在値を取得できませんでした（元の値のまま）"); } // 取得失敗は元の値を維持
+  if(!c[1].textContent.trim()){ const jp=await getJpName(code); if(jp) c[1].textContent=jp; }
+  recalc(); saveLocal(); applyFilter(tid); btn.disabled=false;
 }
 // キンカブの取引(金額指定)を記録し、売買履歴へ自動追加
 function openTradeKin(btn){
@@ -687,6 +779,7 @@ function calcDiv(){
   const box=document.getElementById("div-year");
   const years=Object.keys(byYear).sort().reverse();
   box.innerHTML = years.length ? years.map(y=>`<div class="yr"><b>${y}年</b>${yen(byYear[y])}</div>`).join("") : "";
+  if(document.querySelector("#t-hold tbody tr")) calcHold(); // 保有株の年間配当列を更新
 }
 
 /* ---------- 売買 ---------- */
@@ -706,8 +799,21 @@ function addTrade(d={}){
     <td class="act"><button class="del" onclick="delRow(this,calcTrade)">削除</button></td>`;
   tb.appendChild(tr);
   tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcTrade));
-  tr.querySelector("select").addEventListener("change",calcTrade);
+  tr.querySelector("select").addEventListener("change",()=>{ autofillAcq(tr); calcTrade(); });
+  tr.children[2].addEventListener("blur",()=>autofillAcq(tr)); // コード→取得単価を自動補完(売の時)
   calcTrade();
+}
+// 売買履歴: 売の行で、保有株・キンカブの平均取得単価を「売却時取得単価」に自動補完(空の時だけ)
+function autofillAcq(tr){
+  const c=tr.children;
+  if(c[1].querySelector("select").value!=="売") return;
+  if(c[6].textContent.trim()) return;             // 既に入力済みなら触らない
+  const code=c[2].textContent.trim(); if(!code) return;
+  let acq=null;
+  document.querySelectorAll("#t-hold tbody tr, #t-kin tbody tr").forEach(h=>{
+    if(h.children[0].textContent.trim()===code){ const v=num(h.children[4]); if(v>0) acq=v; }
+  });
+  if(acq!=null){ c[6].textContent=acq; fmtMoney(c[6]); calcTrade(); saveLocal(); }
 }
 function calcTrade(){
   let tpl=0; const byYear={};
@@ -744,7 +850,7 @@ const PROXIES=[
   u=>"https://thingproxy.freeboard.io/fetch/"+u,
 ];
 // タイムアウト付きfetch(固まったプロキシで止まらないように)
-async function pfetch(url,ms=9000){
+async function pfetch(url,ms=6000){
   const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),ms);
   try{ return await fetch(url,{cache:"no-store",signal:ctl.signal}); }
   finally{ clearTimeout(t); }
@@ -835,23 +941,7 @@ async function autoName(codeCell, nameCell, priceCell, recalc){
   if(recalc) recalc();
   saveLocal();
 }
-async function fetchPrices(){
-  const btn=document.getElementById("btn-fetch"), msg=document.getElementById("fetch-msg");
-  const rows=[...document.querySelectorAll("#t-hold tbody tr")];
-  if(!rows.length){msg.textContent="銘柄がありません";return;}
-  btn.disabled=true; let ok=0,ng=[];
-  for(let i=0;i<rows.length;i++){
-    const c=rows[i].children, code=c[0].textContent.trim();
-    if(!code){continue;}
-    msg.textContent=`取得中… ${i+1}/${rows.length} (${code})`;
-    const price=await getPrice(code);
-    if(price!=null){ c[5].textContent=price; ok++; c[5].style.background="#e8f6ee"; setTimeout(()=>c[5].style.background="",1200); }
-    else ng.push(code);
-    if(!c[1].textContent.trim()){ const jp=await getJpName(code); c[1].textContent=jp||""; }
-  }
-  formatAllMoney(); calcHold(); saveLocal(); applyFilter("t-hold"); btn.disabled=false;
-  msg.textContent=`更新${ok}件`+(ng.length?` / 失敗: ${ng.join(", ")}(手入力してください)`:"")+`  ${new Date().toLocaleTimeString("ja-JP")}`;
-}
+function fetchPrices(){ return updatePrices("t-hold","btn-fetch","fetch-msg",calcHold); }
 
 /* ---------- サマリー ---------- */
 function renderSummary(){
@@ -890,6 +980,16 @@ function renderSummary(){
   const evpl=val-cost, grand=evpl+real+dv;
   const set=(id,v,sign)=>{const e=document.getElementById(id);e.textContent=yen(v);if(sign)e.className="v "+(v>=0?"pos":"neg");};
   set("s-cost",cost);set("s-val",val);set("s-pl",evpl,1);set("s-real",real,1);set("s-div",dv);set("s-grand",grand,1);
+  // 配当利回り
+  document.getElementById("s-yield").textContent = cost>0 ? (dv/cost*100).toFixed(2)+"%" : "-";
+  // 税金の概算(特定口座前提: 実現損益プラス時のみ課税)
+  const tax = real>0 ? real*0.20315 : 0;
+  document.getElementById("s-tax").textContent = yen(tax);
+  const ne=document.getElementById("s-net"); ne.textContent=yen(real-tax); ne.className="v "+((real-tax)>=0?"pos":"neg");
+  // 予想年間配当(1株配当ベース、保有株の予想利回り用データから)
+  let fdiv=0;
+  document.querySelectorAll("#t-hold tbody tr").forEach(tr=>{ if(vis(tr)){ const c=tr.children; fdiv+=num(c[3])*num(c[12]); } });
+  document.getElementById("s-fdiv").textContent = yen(fdiv);
   // bar
   const bar=document.getElementById("s-bar"),leg=document.getElementById("s-legend");
   bar.innerHTML="";leg.innerHTML="";
@@ -901,6 +1001,67 @@ function renderSummary(){
       leg.insertAdjacentHTML("beforeend",`<div><i style="background:${col}"></i>${x.name} ${p.toFixed(1)}%</div>`);
     });
   } else bar.innerHTML='<span style="width:100%;background:#e3e8ef"></span>';
+}
+
+/* ---------- 資産推移(スナップショット) ---------- */
+function getHistory(){ try{ return JSON.parse(localStorage.getItem("kabuHistory")||"[]"); }catch{ return []; } }
+function setHistory(h){ localStorage.setItem("kabuHistory",JSON.stringify(h)); }
+function recordSnapshot(){
+  let val=0,cost=0,real=0,dv=0; // フィルターに関係なく全件で集計
+  document.querySelectorAll("#t-hold tbody tr").forEach(tr=>{const c=tr.children;val+=num(c[3])*num(c[5]);cost+=num(c[3])*num(c[4]);});
+  document.querySelectorAll("#t-kin tbody tr").forEach(tr=>{const c=tr.children;const q=num(c[4])?num(c[3])/num(c[4]):0;val+=q*num(c[5]);cost+=num(c[3]);});
+  document.querySelectorAll("#t-trade tbody tr").forEach(tr=>{const c=tr.children;if(c[1].querySelector("select").value==="売"){const a=num(c[6]);if(a)real+=(num(c[5])-a)*num(c[4]);}});
+  document.querySelectorAll("#t-div tbody tr").forEach(tr=>dv+=num(tr.children[3]));
+  const grand=(val-cost)+real+dv, ds=today();
+  const h=getHistory(), i=h.findIndex(x=>x.date===ds), rec={date:ds,val:Math.round(val),grand:Math.round(grand)};
+  if(i>=0) h[i]=rec; else h.push(rec);
+  h.sort((a,b)=>a.date.localeCompare(b.date));
+  setHistory(h); drawHistory(); flash("資産を記録しました ("+ds+")");
+}
+function delSnapshot(ds){ setHistory(getHistory().filter(x=>x.date!==ds)); drawHistory(); }
+function drawHistory(){
+  const chart=document.getElementById("hist-chart"), list=document.getElementById("hist-list"); if(!chart) return;
+  const h=getHistory();
+  if(!h.length){ chart.innerHTML='<p style="color:var(--sub);font-size:12px;margin:4px 0;">まだ記録がありません。「📸 今の資産を記録」で追加できます。</p>'; list.innerHTML=""; return; }
+  const W=680,H=200,padL=64,padR=20,padT=24,padB=28, n=h.length;
+  const vals=h.map(x=>x.val), mn=Math.min(...vals), mx=Math.max(...vals), rg=(mx-mn)||1;
+  const X=i=> n===1 ? (padL+(W-padL-padR)/2) : padL+(W-padL-padR)*i/(n-1);
+  const Y=v=> H-padB-(H-padT-padB)*(v-mn)/rg;
+  const pts=h.map((r,i)=>`${X(i).toFixed(1)},${Y(r.val).toFixed(1)}`).join(" ");
+  const dots=h.map((r,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.val).toFixed(1)}" r="3" fill="#2563eb"/>`).join("");
+  chart.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;border:1px solid var(--line);border-radius:8px;background:#fff;">
+    <text x="${padL}" y="16" font-size="11" fill="#697586">評価総額の推移</text>
+    <text x="6" y="${(Y(mx)+4).toFixed(1)}" font-size="10" fill="#697586">${yen(mx)}</text>
+    <text x="6" y="${(Y(mn)+4).toFixed(1)}" font-size="10" fill="#697586">${yen(mn)}</text>
+    <polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="2"/>${dots}
+    <text x="${padL}" y="${H-8}" font-size="10" fill="#697586">${h[0].date}</text>
+    <text x="${W-padR}" y="${H-8}" font-size="10" fill="#697586" text-anchor="end">${h[n-1].date}</text>
+  </svg>`;
+  list.innerHTML=[...h].reverse().map(r=>{
+    const cls=r.grand>=0?"pos":"neg";
+    return `<div class="yr"><b>${r.date}</b>${yen(r.val)} <span class="${cls}">(${r.grand>=0?"+":""}${yen(r.grand)})</span> <span onclick="delSnapshot('${r.date}')" title="削除" style="cursor:pointer;color:#b42318;margin-left:6px;font-weight:700;">×</span></div>`;
+  }).join("");
+}
+
+/* ---------- CSV書き出し ---------- */
+function exportCSV(type){
+  const rows=[]; let name;
+  if(type==="trade"){
+    name="売買履歴";
+    rows.push(["日付","区分","コード","銘柄名","株数","約定単価","取得単価","受渡金額","実現損益"]);
+    document.querySelectorAll("#t-trade tbody tr").forEach(tr=>{const c=tr.children;
+      rows.push([c[0].textContent,c[1].querySelector("select").value,c[2].textContent,c[3].textContent,num(c[4]),num(c[5]),num(c[6]),num(c[7]),(c[8].textContent||"").replace(/[^0-9.\-]/g,"")]);});
+  } else {
+    name="配当";
+    rows.push(["受取日","コード","銘柄名","受取額(税引後)","メモ"]);
+    document.querySelectorAll("#t-div tbody tr").forEach(tr=>{const c=tr.children;
+      rows.push([c[0].textContent,c[1].textContent,c[2].textContent,num(c[3]),c[4].textContent]);});
+  }
+  const esc=v=>{v=String(v==null?"":v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const csv="\uFEFF"+rows.map(r=>r.map(esc).join(",")).join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=name+"_"+today()+".csv";a.click();
 }
 
 /* ---------- 保存/復元 ---------- */
@@ -933,21 +1094,31 @@ function apply(d){
   (d.hold||[]).forEach(r=>{
     // 旧フォーマット(買付日なし=5列)との互換
     if(r.length<6) r=[r[0],r[1],"",r[2],r[3],r[4]];
-    addHold({code:r[0],name:r[1],date:r[2],qty:r[3],buy:r[4],now:r[5],nisa:r[10]==="1"});
+    // 列数の変遷に対応: NISAは 16列→r[14] / 14列→r[12] / 12列→r[10]。予想1株配当は16列のみr[12]
+    const hn=(r.length>=15?r[14]:r.length>=13?r[12]:r[10])==="1";
+    const edps=r.length>=15?r[12]:"";
+    addHold({code:r[0],name:r[1],date:r[2],qty:r[3],buy:r[4],now:r[5],edps:edps,nisa:hn});
   });
   (d.kin||[]).forEach(r=>addKin({code:r[0],name:r[1],date:r[2],invest:r[3],buy:r[4],now:r[5],nisa:r[10]==="1"}));
   (d.div||[]).forEach(r=>addDiv({date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]}));
   (d.trade||[]).forEach(r=>addTrade({date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6]}));
+  formatAllMoney(); formatAllDates(); // 読込データを整形
   applyAllFilters();
 }
 function exportJSON(){
-  const blob=new Blob([JSON.stringify(gather(),null,2)],{type:"application/json"});
+  const data={...gather(), _history:getHistory()}; // 資産推移も含める
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="株式管理_"+new Date().toISOString().slice(0,10)+".json";a.click();
 }
 function importJSON(inp){
   const f=inp.files[0];if(!f)return;
-  const r=new FileReader();r.onload=e=>{try{apply(JSON.parse(e.target.result));saveLocal();flash("⬆ 読み込みました");}catch{alert("ファイルを読めませんでした");}};
+  const r=new FileReader();r.onload=e=>{try{
+    const d=JSON.parse(e.target.result);
+    apply(d);
+    if(Array.isArray(d._history)){ setHistory(d._history); drawHistory(); } // 資産推移を復元
+    saveLocal(); flash("⬆ 読み込みました");
+  }catch{alert("ファイルを読めませんでした");}};
   r.readAsText(f);inp.value="";
 }
 function flash(msg){
@@ -1011,7 +1182,7 @@ document.addEventListener("input",(e)=>{
 
 /* ---------- 絞り込み(フィルター) ---------- */
 const FILTER_CFG={
-  "t-hold":{kw:[0,1],nisa:10,pl:8,date:2},
+  "t-hold":{kw:[0,1],nisa:14,pl:8,date:2},
   "t-kin":{kw:[0,1],nisa:10,pl:8,date:2},
   "t-div":{kw:[1,2],nisa:null,pl:null,date:0},
   "t-trade":{kw:[2,3],nisa:null,pl:8,date:0},
