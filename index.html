@@ -7,10 +7,10 @@
 <title>株式管理表</title>
 <style>
   :root{
-    --bg:#f4f6f9; --card:#ffffff; --line:#e3e8ef; --ink:#1f2933;
-    --sub:#697586; --accent:#2563eb; --accent-soft:#eff4ff;
-    --plus:#d92d20; --minus:#1570cf; --head:#0f2540;
-    --edit:#fffef7; --calc:#f7f9fc;
+    --bg:#eceff7; --card:#ffffff; --line:#e4e8f1; --ink:#1e2735;
+    --sub:#6b7688; --accent:#4f46e5; --accent-soft:#eef0fe;
+    --plus:#dc2626; --minus:#2563eb; --head:#0f172a;
+    --edit:#fffdf4; --calc:#f6f8fc;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -20,27 +20,28 @@
     display:flex;flex-direction:column;height:100vh;overflow:hidden;
   }
   header{
-    background:var(--head);color:#fff;padding:16px 22px;
+    background:linear-gradient(120deg,#0f172a 0%,#1e293b 55%,#312e81 135%);color:#fff;padding:16px 22px;
     display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-    position:sticky;top:0;z-index:50;flex-shrink:0;
+    position:sticky;top:0;z-index:50;flex-shrink:0;box-shadow:0 2px 14px rgba(15,23,42,.28);
   }
-  header h1{font-size:18px;margin:0;letter-spacing:.04em;}
+  header h1{font-size:18px;margin:0;letter-spacing:.05em;font-weight:800;}
   header .tools{display:flex;gap:8px;flex-wrap:wrap;}
   header button{
-    background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);
-    padding:7px 12px;border-radius:7px;cursor:pointer;font-size:12.5px;
+    background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.22);
+    padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12.5px;backdrop-filter:blur(4px);transition:.15s;
   }
-  header button:hover{background:rgba(255,255,255,.22);}
-  .tabs{display:flex;gap:4px;padding:14px 22px 0;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;zoom:0.95;}
+  header button:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);}
+  .tabs{display:flex;gap:7px;padding:14px 22px 12px;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;zoom:0.95;}
   .tab{
-    padding:9px 18px;border:1px solid var(--line);border-bottom:none;
-    background:#e9edf3;border-radius:8px 8px 0 0;cursor:pointer;color:var(--sub);font-weight:600;
+    padding:8px 18px;border:1px solid var(--line);
+    background:#fff;border-radius:999px;cursor:pointer;color:var(--sub);font-weight:600;transition:.15s;
   }
-  .tab.active{background:var(--card);color:var(--accent);}
+  .tab:hover{color:var(--accent);border-color:#c7cdea;}
+  .tab.active{background:linear-gradient(180deg,#5b52e8,#4f46e5);color:#fff;border-color:transparent;box-shadow:0 3px 9px rgba(79,70,229,.38);}
   main{padding:0 22px 16px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;zoom:0.95;}
   .panel{
     display:none;background:var(--card);border:1px solid var(--line);
-    border-radius:0 10px 10px 10px;padding:18px;
+    border-radius:14px;padding:18px;box-shadow:0 6px 22px rgba(15,23,42,.07);
   }
   .panel.active{display:flex;flex-direction:column;flex:1;min-height:0;}
   .panel.active > *{flex:0 0 auto;}                 /* 上部・下部は固定サイズ */
@@ -54,7 +55,7 @@
   #t-hold{min-width:1202px;} #t-kin{min-width:1222px;} #t-div{min-width:690px;} #t-trade,#t-tradek{min-width:1020px;}
   th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;overflow-wrap:anywhere;}
   thead th{position:sticky;top:0;z-index:3;}
-  th{background:var(--accent-soft);color:var(--head);font-weight:600;white-space:nowrap;}
+  th{background:linear-gradient(180deg,#f1f3fe,#e9ecfb);color:var(--head);font-weight:700;white-space:nowrap;}
   th.sortable{cursor:pointer;user-select:none;}
   th.sortable:hover{background:#e3edff;}
   th[data-dir=asc]::after{content:" ▲";font-size:10px;color:var(--accent);}
@@ -80,18 +81,19 @@
   .filters input.f-kw{padding:6px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;min-width:180px;}
   .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#fff;color:var(--ink);}
   .filters .f-search,.filters .f-clear{min-width:72px;padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;}
-  .filters .f-search{border:1px solid var(--accent);background:var(--accent);color:#fff;}
-  .filters .f-search:hover{filter:brightness(1.08);}
+  .filters .f-search{border:none;background:linear-gradient(180deg,#5b52e8,#4f46e5);color:#fff;box-shadow:0 2px 6px rgba(79,70,229,.3);}
+  .filters .f-search:hover{filter:brightness(1.06);}
   .filters .f-clear{border:1px solid var(--line);background:#eef2f7;color:var(--ink);}
   .filters .f-clear:hover{background:#e2e8f1;}
   .filters .f-count{font-size:12px;color:var(--sub);}
   .row-tools{margin-top:12px;display:flex;gap:8px;}
   .btn{
-    background:var(--accent);color:#fff;border:none;padding:8px 14px;
-    border-radius:7px;cursor:pointer;font-size:13px;
+    background:linear-gradient(180deg,#5b52e8,#4f46e5);color:#fff;border:none;padding:8px 15px;
+    border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 2px 6px rgba(79,70,229,.3);transition:.15s;
   }
-  .btn:hover{filter:brightness(1.07);}
-  .btn.ghost{background:#eef2f7;color:var(--ink);border:1px solid var(--line);}
+  .btn:hover{filter:brightness(1.06);box-shadow:0 4px 10px rgba(79,70,229,.38);}
+  .btn.ghost{background:#eef1f8;color:var(--ink);border:1px solid var(--line);box-shadow:none;}
+  .btn.ghost:hover{background:#e5e9f3;filter:none;}
   .del{color:#b42318;cursor:pointer;font-weight:600;background:#fdecec;border:1px solid #f5cfcf;border-radius:6px;font-size:12px;padding:4px 10px;white-space:nowrap;}
   .del:hover{background:#fbdcdc;}
   td.act{white-space:nowrap;text-align:center;vertical-align:middle;padding:6px;}
@@ -111,7 +113,7 @@
   .tm-hint{font-size:12px;color:var(--sub);margin:0 0 16px;min-height:16px;line-height:1.5;}
   select{font-size:13px;padding:3px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
-  .kpi{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:14px;}
+  .kpi{background:linear-gradient(160deg,#f5f6ff,#ffffff);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(15,23,42,.05);border-top:3px solid var(--accent);}
   .kpi .l{font-size:12px;color:var(--sub);margin-bottom:6px;}
   .kpi .v{font-size:20px;font-weight:700;}
   .bar{height:22px;border-radius:5px;display:flex;overflow:hidden;border:1px solid var(--line);}
@@ -757,7 +759,7 @@ async function updatePrices(tid, btnId, msgId, calcFn){
     else ng.push(code);
     if(!c[1].textContent.trim()){ const jp=await getJpName(code); if(jp) c[1].textContent=jp; }
     done++; msg.textContent=`取得中… ${done}/${total}`;
-  }, 6);
+  }, 4);
   calcFn(); saveLocal(); applyFilter(tid); btn.disabled=false;
   msg.textContent=`更新${ok}件`+(ng.length?` / 失敗: ${ng.join(", ")}`:"")+`  ${new Date().toLocaleTimeString("ja-JP")}`;
 }
@@ -940,12 +942,25 @@ const PROXIES=[
   u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
   u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
   u=>"https://thingproxy.freeboard.io/fetch/"+u,
+  u=>"https://api.cors.lol/?url="+encodeURIComponent(u),
+  u=>"https://proxy.cors.sh/"+u,
+  u=>"https://cors-proxy.htmldriven.com/?url="+encodeURIComponent(u),
 ];
 // タイムアウト付きfetch(固まったプロキシで止まらないように)
-async function pfetch(url,ms=6000){
+async function pfetch(url,ms=7000){
   const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),ms);
   try{ return await fetch(url,{cache:"no-store",signal:ctl.signal}); }
   finally{ clearTimeout(t); }
+}
+// 全プロキシを同時に試し、最初に有効な結果が返ったものを採用(レース方式=安定・高速)
+async function fetchViaProxies(url, parse){
+  const tries = PROXIES.map(p => pfetch(p(url)).then(async r=>{
+    if(!r.ok) throw 0;
+    const v = await parse(r);
+    if(v==null || v==="") throw 0;   // 無効な結果は失敗扱いにして他の成功を待つ
+    return v;
+  }));
+  try { return await Promise.any(tries); } catch { return null; }
 }
 // 日本株コード判定: 4桁数字(7203)＋新形式の3桁数字+英字(435A,316A)
 const isJpCode = c => /^\d{3}[0-9A-Z]$/i.test((c||"").trim());
@@ -953,54 +968,42 @@ async function getQuote(code){
   // 日本株: コード末尾 .T (例 7203.T / 435A.T)。為替なし。
   const sym=isJpCode(code)?code.trim().toUpperCase()+".T":code;
   const url="https://query1.finance.yahoo.com/v8/finance/chart/"+sym+"?interval=1d&range=1d";
-  for(const p of PROXIES){
-    try{
-      const r=await pfetch(p(url));
-      if(!r.ok) continue;
-      const j=await r.json();
-      const m=j?.chart?.result?.[0]?.meta;
-      if(m){
-        return {price:(typeof m.regularMarketPrice==="number"?m.regularMarketPrice:null),
-                name:m.shortName||m.longName||null};
-      }
-    }catch(e){/* 次のプロキシへ */}
-  }
-  return null;
+  return fetchViaProxies(url, async r=>{
+    const j=await r.json();
+    const m=j?.chart?.result?.[0]?.meta;
+    if(!m) return null;
+    return {price:(typeof m.regularMarketPrice==="number"?m.regularMarketPrice:null),
+            name:m.shortName||m.longName||null};
+  });
 }
-// 現在値を取得(認証不要のStooq優先 → Yahooフォールバック)
+// 現在値を取得(認証不要のStooq と Yahoo を同時に試し、先に返った方を採用)
 async function getPrice(code){
+  const sources=[];
   if(isJpCode(code)){
     const su="https://stooq.com/q/l/?s="+code.trim().toLowerCase()+".jp&f=sl1&e=csv";
-    for(const p of PROXIES){
-      try{
-        const r=await pfetch(p(su)); if(!r.ok) continue;
-        const t=(await r.text()).trim();          // 例: "7203.JP,2768"
-        const v=parseFloat(t.substring(t.indexOf(",")+1).replace(/[^0-9.]/g,""));
-        if(v>0) return v;
-      }catch(e){/* 次へ */}
-    }
+    sources.push(fetchViaProxies(su, async r=>{
+      const t=(await r.text()).trim();            // 例: "7203.JP,2768"
+      const v=parseFloat(t.substring(t.indexOf(",")+1).replace(/[^0-9.]/g,""));
+      return v>0 ? v : null;
+    }));
   }
-  const q=await getQuote(code);                   // Yahoo APIフォールバック
-  return q && q.price!=null ? q.price : null;
+  sources.push(getQuote(code).then(q=>q&&q.price!=null?q.price:null));
+  // 2系統(Stooq/Yahoo)も同時に走らせ、最初に有効値を返した方を採用
+  try{ return await Promise.any(sources.map(p=>p.then(v=>{ if(v==null) throw 0; return v; }))); }
+  catch{ return null; }
 }
 // 日本語の銘柄名をYahoo!ファイナンス日本版のタイトルから取得
 async function getJpName(code){
   const sym=isJpCode(code)?code.trim().toUpperCase()+".T":code;
   const url="https://finance.yahoo.co.jp/quote/"+sym;
-  for(const p of PROXIES){
-    try{
-      const r=await pfetch(p(url));
-      if(!r.ok) continue;
-      const html=await r.text();
-      const m=html.match(/<title>([^<]+)<\/title>/);
-      if(m){
-        // 例: "トヨタ自動車(株)【7203】：株価…" → "トヨタ自動車"
-        let name=m[1].split("【")[0].trim().replace(/[(（]株[)）]/g,"").trim();
-        if(name && !/Yahoo/.test(name)) return name;
-      }
-    }catch(e){/* 次のプロキシへ */}
-  }
-  return null;
+  return fetchViaProxies(url, async r=>{
+    const html=await r.text();
+    const m=html.match(/<title>([^<]+)<\/title>/);
+    if(!m) return null;
+    // 例: "トヨタ自動車(株)【7203】：株価…" → "トヨタ自動車"
+    const name=m[1].split("【")[0].trim().replace(/[(（]株[)）]/g,"").trim();
+    return (name && !/Yahoo/.test(name)) ? name : null;
+  });
 }
 // コード欄から銘柄名と現在値を自動補完(空の項目だけ補完)
 async function autoName(codeCell, nameCell, priceCell, recalc){
