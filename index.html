@@ -31,6 +31,8 @@
     padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12.5px;backdrop-filter:blur(4px);transition:.15s;
   }
   header button:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);}
+  .hdr-toggle{display:flex;align-items:center;gap:5px;color:#fff;font-size:12px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
+  .hdr-toggle input{accent-color:#818cf8;cursor:pointer;margin:0;}
   .tabs{display:flex;gap:7px;padding:14px 22px 12px;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;zoom:0.95;}
   .tab{
     padding:8px 18px;border:1px solid var(--line);
@@ -38,6 +40,7 @@
   }
   .tab:hover{color:var(--accent);border-color:#c7cdea;}
   .tab.active{background:linear-gradient(180deg,#5b52e8,#4f46e5);color:#fff;border-color:transparent;box-shadow:0 3px 9px rgba(79,70,229,.38);}
+  .tabbadge{display:none;background:#dc2626;color:#fff;font-size:10px;font-weight:700;min-width:17px;height:17px;line-height:17px;text-align:center;border-radius:9px;margin-left:6px;padding:0 4px;vertical-align:middle;animation:blink 1.6s ease-in-out infinite;}
   main{padding:0 22px 16px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;zoom:0.95;}
   .panel{
     display:none;background:var(--card);border:1px solid var(--line);
@@ -52,7 +55,13 @@
   .tbl-wrap{overflow:auto;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
   /* 各表の最小幅(狭い画面では銘柄名を残して横スクロール) */
-  #t-hold{min-width:1202px;} #t-kin{min-width:1222px;} #t-div{min-width:690px;} #t-trade,#t-tradek{min-width:1020px;}
+  #t-hold{min-width:1202px;} #t-kin{min-width:1222px;} #t-div{min-width:690px;} #t-trade,#t-tradek{min-width:1020px;} #t-watch{min-width:820px;}
+  /* 買い予定: 買い時の行を緑ハイライト */
+  #t-watch tbody tr.hit td{background:#fdecec;}
+  #t-watch tbody tr.hit td:first-child{box-shadow:inset 3px 0 0 #dc2626;}
+  .watch-hit{display:inline-block;background:#dc2626;color:#fff;font-weight:700;font-size:11px;padding:3px 12px;border-radius:11px;letter-spacing:.03em;animation:blink 1.6s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+  #t-watch td.c-status{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.5;}
   th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;overflow-wrap:anywhere;}
   thead th{position:sticky;top:0;z-index:3;}
   th{background:linear-gradient(180deg,#f1f3fe,#e9ecfb);color:var(--head);font-weight:700;white-space:nowrap;}
@@ -171,7 +180,46 @@
   .m-cancel:hover{background:#e2e8f1;}
   .m-ok{background:var(--head);color:#fff;border-color:var(--head);}
   .m-ok:hover{filter:brightness(1.15);}
+  /* ===== バックアップ促しバー ===== */
+  #backup-banner{position:fixed;left:0;right:0;bottom:0;z-index:150;background:#fef3c7;color:#7c4a13;border-top:1px solid #fcd982;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+  #backup-banner b{color:#7c4a13;}
+  #backup-banner .bb-actions{display:flex;gap:8px;flex-shrink:0;}
+  #backup-banner button{padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid transparent;}
+  #backup-banner .bb-do{background:#0f2540;color:#fff;}
+  #backup-banner .bb-later{background:#fff;border-color:#e0cfa0;color:#7c4a13;}
+  #theme-btn{min-width:38px;text-align:center;}
+  /* ===== ダークモード ===== */
+  :root[data-theme="dark"]{
+    --bg:#0f141d; --card:#1a2230; --line:#2c3646; --ink:#e6eaf2;
+    --sub:#95a1b6; --accent:#818cf8; --accent-soft:#26304a;
+    --plus:#f87171; --minus:#60a5fa; --head:#2b3a57;
+    --edit:#2c2a1c; --calc:#222a39;
+  }
+  :root[data-theme="dark"] .tab{background:var(--card);}
+  :root[data-theme="dark"] th{background:linear-gradient(180deg,#222c3e,#1c2534);color:var(--ink);}
+  :root[data-theme="dark"] th.sortable:hover{background:#2a3852;}
+  :root[data-theme="dark"] tfoot td{background:#222c3c;color:var(--ink);}
+  :root[data-theme="dark"] td[contenteditable]:focus{background:#2a3346;}
+  :root[data-theme="dark"] .nisa-toggle span{background:#2a3346;border-color:#3a475c;color:#9fb0c6;}
+  :root[data-theme="dark"] .kpi{background:linear-gradient(160deg,#1f2739,#1a2230);}
+  :root[data-theme="dark"] .help ul{background:var(--card);}
+  :root[data-theme="dark"] .basics .sec{background:var(--card);}
+  :root[data-theme="dark"] .basics .kcard,:root[data-theme="dark"] .basics .tip{background:#1f2739;}
+  :root[data-theme="dark"] .basics .kformula{background:#232c3d;color:var(--ink);border-color:#313c4f;}
+  :root[data-theme="dark"] .modal-box{background:var(--card);}
+  :root[data-theme="dark"] .modal-title{color:var(--ink);}
+  :root[data-theme="dark"] .m-cancel,:root[data-theme="dark"] .btn.ghost,:root[data-theme="dark"] .filters .f-clear{background:#2a3346;color:var(--ink);}
+  :root[data-theme="dark"] .del{background:#3a2020;border-color:#5a2e2e;color:#f2a3a3;}
+  :root[data-theme="dark"] #t-watch tbody tr.hit td{background:#3a2222;}
+  :root[data-theme="dark"] #t-watch tbody tr.hit td:first-child{box-shadow:inset 3px 0 0 #f87171;}
+  :root[data-theme="dark"] input.f-kw,:root[data-theme="dark"] .filters input.f-kw,:root[data-theme="dark"] .filters select,:root[data-theme="dark"] .trade-form input,:root[data-theme="dark"] .trade-form select,:root[data-theme="dark"] select{background:var(--card);color:var(--ink);}
+  :root[data-theme="dark"] .trade-form input:disabled{background:#232a39;color:#5c667a;}
+  :root[data-theme="dark"] .help .warn,:root[data-theme="dark"] .basics .warn{background:#3a2f1c;border-color:#5c4a2a;color:#e6c48a;}
+  :root[data-theme="dark"] #backup-banner{background:#3a2f1c;color:#e6c48a;border-color:#5c4a2a;}
+  :root[data-theme="dark"] #backup-banner b{color:#f0d9a5;}
+  :root[data-theme="dark"] #backup-banner .bb-later{background:#2a2313;color:#e6c48a;border-color:#5c4a2a;}
 </style>
+<script>/* テーマを描画前に適用してちらつきを防ぐ */try{document.documentElement.setAttribute("data-theme",localStorage.getItem("kabuTheme")==="dark"?"dark":"light");}catch(e){}</script>
 </head>
 <body>
 <header>
@@ -179,7 +227,10 @@
     <span id="last-updated" style="display:block;font-weight:400;font-size:11px;opacity:.65;margin-top:2px;"></span>
   </h1>
   <div class="tools">
-    <button onclick="saveLocal()">💾 保存</button>
+    <label class="hdr-toggle" title="開いたときに全銘柄の現在値を自動取得します"><input type="checkbox" id="auto-upd" onchange="setAutoUpdate(this.checked)">起動時に更新</label>
+    <label class="hdr-toggle" title="買い時になったらデスクトップ通知でお知らせします"><input type="checkbox" id="notify-upd" onchange="setNotify(this.checked)">🔔 買い時通知</label>
+    <button onclick="toggleTheme()" id="theme-btn" title="ダークモード切替">🌙</button>
+    <button onclick="saveLocalManual()">💾 保存</button>
     <button onclick="exportJSON()">⬇ バックアップ</button>
     <button onclick="document.getElementById('imp').click()">⬆ 読込</button>
     <input id="imp" type="file" accept=".json" style="display:none" onchange="importJSON(this)">
@@ -192,6 +243,7 @@
   <div class="tab" data-t="div" onclick="switchTab('div')">配当金</div>
   <div class="tab" data-t="trade" onclick="switchTab('trade')">売買(保有株)</div>
   <div class="tab" data-t="tradek" onclick="switchTab('tradek')">売買(キンカブ)</div>
+  <div class="tab" data-t="watch" onclick="switchTab('watch')">買い予定<span id="watch-badge" class="tabbadge"></span></div>
   <div class="tab" data-t="sum" onclick="switchTab('sum')">資産サマリー</div>
   <div class="tab" data-t="basics" onclick="switchTab('basics')">株の基本</div>
   <div class="tab" data-t="help" onclick="switchTab('help')">使い方</div>
@@ -293,7 +345,7 @@
       <tfoot><tr><td colspan="3" class="txt">合計(表示中)</td><td id="d-total" class="calc">¥0</td><td colspan="2"></td></tr></tfoot>
     </table></div>
     <div id="div-year" class="year-sum"></div>
-    <div class="row-tools"><button class="btn" onclick="addDiv()">＋ 配当を追加</button></div>
+    <div class="row-tools"><button class="btn" onclick="addDiv({date:today()})">＋ 配当を追加</button></div>
   </section>
 
   <!-- 売買(保有株) -->
@@ -318,7 +370,7 @@
       <tfoot><tr><td colspan="8" class="txt">実現損益 合計(表示中)</td><td id="tr-pl" class="calc">¥0</td><td></td><td></td></tr></tfoot>
     </table></div>
     <div id="trade-year" class="year-sum"></div>
-    <div class="row-tools"><button class="btn" onclick="addTrade()">＋ 取引を追加</button></div>
+    <div class="row-tools"><button class="btn" onclick="addTrade({date:today()})">＋ 取引を追加</button></div>
   </section>
 
   <!-- 売買(キンカブ) -->
@@ -343,7 +395,27 @@
       <tfoot><tr><td colspan="8" class="txt">実現損益 合計(表示中)</td><td id="trk-pl" class="calc">¥0</td><td></td><td></td></tr></tfoot>
     </table></div>
     <div id="tradek-year" class="year-sum"></div>
-    <div class="row-tools"><button class="btn" onclick="addTradeK()">＋ 取引を追加</button></div>
+    <div class="row-tools"><button class="btn" onclick="addTradeK({date:today()})">＋ 取引を追加</button></div>
+  </section>
+
+  <!-- 買い予定(ウォッチリスト) -->
+  <section class="panel" id="p-watch">
+    <h2>買い予定（ウォッチリスト）</h2>
+    <p class="desc">「ここまで下がったら買う」価格を登録しておくと、現在値がその価格以下になった行に<span style="color:#dc2626;font-weight:700;">赤い「買い時」バッジ（点滅）</span>が付きます。</p>
+    <div class="tbl-wrap"><table id="t-watch">
+      <colgroup><col style="width:64px"><col><col style="width:104px"><col style="width:116px"><col style="width:170px"><col style="width:170px"><col style="width:96px"></colgroup>
+      <thead><tr>
+        <th class="txt">コード</th><th class="txt">銘柄名</th>
+        <th>現在値</th><th>買いたい価格</th><th>状況</th><th class="txt">メモ</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td colspan="7" class="txt" style="color:var(--sub);font-weight:400;">※ 現在値はコード入力・各行の 🔄・「現在値を自動更新」で取得できます。</td></tr></tfoot>
+    </table></div>
+    <div class="row-tools">
+      <button class="btn" onclick="addWatch()">＋ 銘柄を追加</button>
+      <button class="btn ghost" id="btn-fetch-watch" onclick="fetchPricesWatch()">🔄 現在値を自動更新</button>
+      <span id="fetch-msg-watch" style="color:var(--sub);font-size:12px;align-self:center;"></span>
+    </div>
   </section>
 
   <!-- サマリー -->
@@ -463,7 +535,7 @@
         <li><b>入力</b>：黄色いセルをクリックして数値や文字を入力します。グレーのセルは自動計算（編集不可）。空欄には入力例（例 <span class="tag">2026-00-00</span> や <span class="tag">¥0</span>）が薄く表示されます。</li>
         <li><b>自動整形</b>：金額欄は数字を入れて欄を離れると「¥」とカンマが付きます（例 2500→¥2,500）。日付欄は「20260701」や「2026/7/1」を入れると「2026-07-01」に整形されます。</li>
         <li><b>Enterで次のセルへ</b>：入力後 <span class="tag">Enter</span> を押すと確定して次の入力セルへ移動します（改行はされません）。</li>
-        <li><b>追加</b>：各タブ下部の <span class="tag">＋ 追加</span> ボタンで行を増やせます。保有株・キンカブの買付日には今日の日付が自動で入ります。</li>
+        <li><b>追加</b>：各タブ下部の <span class="tag">＋ 追加</span> ボタンで行を増やせます。日付欄（買付日・受取日・売買日）には今日の日付が自動で入ります。</li>
         <li><b>削除</b>：行右の <span class="tag">削除</span> ボタン。確認ダイアログが出ます。</li>
         <li><b>並べ替え</b>：見出しをクリックすると昇順（▲）、もう一度で降順（▼）に並び替わります。</li>
         <li><b>見出し固定</b>：行数が多いときは表内でスクロールし、見出しが上部に固定されます。</li>
@@ -474,6 +546,7 @@
         <li><b>自動補完</b>：コード欄（例 7203、新形式の 435A なども可）を入力して欄を離れると、日本語の銘柄名と現在値が自動で入ります。</li>
         <li><b>1行だけ更新</b>：保有株・キンカブの各行の <span class="tag">🔄</span> ボタンで、その行の現在値だけを更新できます。</li>
         <li><b>まとめて更新</b>：<span class="tag">🔄 現在値を自動更新</span> で全銘柄の株価を一括取得します（約15〜20分遅延）。取得できない銘柄は手入力してください。</li>
+        <li><b>起動時に更新</b>：ヘッダーの <span class="tag">☑ 起動時に更新</span> をオンにすると、ページを開いたとき自動で全銘柄の現在値を取得します（毎回通信します）。</li>
       </ul>
 
       <h3>絞り込み（フィルター）</h3>
@@ -490,6 +563,7 @@
         <li><b>キンカブ</b>：株数ではなく「金額」で売買する取引用。投資額と約定単価から保有株数（小数）を逆算。<span class="tag">取引</span> では金額を入力して売買します。「口座」欄で特定⇄NISAを切り替えられます。</li>
         <li><b>配当金</b>：受け取った配当を記録。全期間合計と年ごとの合計を表示します。</li>
         <li><b>売買(保有株)・売買(キンカブ)</b>：売買の記録を保有株用とキンカブ用の2タブに分けて管理します。「売」を選び取得単価を入れると実現損益を計算。年ごとの実現損益も表示（確定申告の目安に）。保有株・キンカブそれぞれの「取引」ボタンから記録すると、対応する売買タブに追加され、元の口座区分（特定/NISA）も引き継がれます。各行の「口座」バッジで手動切替も可能です。</li>
+        <li><b>買い予定</b>：気になる銘柄と「買いたい価格」を登録しておくと、現在値がその価格以下になった行が赤で点滅する「買い時！」になります。コード入力・🔄で現在値を取得できます。</li>
         <li><b>資産サマリー</b>：全タブを集計し、取得総額・評価額・損益・配当・構成比を表示（保有株とキンカブの同一銘柄は名寄せ）。配当利回り・実現損益の概算税(20.315%)も表示。各タブのフィルターで表示中の行のみ集計します。</li>
         <li><b>株の基本</b>：株の用語や指標（PER・PBR・ROE・配当利回りなど）、口座・税金の制度、投資の心得をやさしくまとめた学習ページです。</li>
       </ul>
@@ -657,6 +731,7 @@ function switchTab(t){
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
   document.getElementById("p-"+t).classList.add("active");
   if(t==="sum"){ renderSummary(); drawHistory(); }
+  else if(t==="watch"){ calcWatch(); } // 買い予定は状況を再判定
   else if(FILTER_CFG["t-"+t]){ populateYears("t-"+t); applyFilter("t-"+t); } // タブ表示時に絞り込みを反映
 }
 
@@ -746,7 +821,7 @@ async function runPool(items, worker, concurrency=6){
   }));
 }
 // 現在値の一括更新(並列)。tid・ボタン・メッセージ・再計算関数を受け取る共通処理
-async function updatePrices(tid, btnId, msgId, calcFn){
+async function updatePrices(tid, btnId, msgId, calcFn, priceIdx=5){
   const btn=document.getElementById(btnId), msg=document.getElementById(msgId);
   const rows=[...document.querySelectorAll("#"+tid+" tbody tr")].filter(tr=>tr.children[0].textContent.trim());
   if(!rows.length){ msg.textContent="銘柄がありません"; return; }
@@ -755,7 +830,7 @@ async function updatePrices(tid, btnId, msgId, calcFn){
   await runPool(rows, async (tr)=>{
     const c=tr.children, code=c[0].textContent.trim();
     const price=await getPrice(code);
-    if(price!=null){ c[5].textContent=price; fmtMoney(c[5]); ok++; c[5].style.background="#e8f6ee"; setTimeout(()=>c[5].style.background="",1200); }
+    if(price!=null){ c[priceIdx].textContent=price; fmtMoney(c[priceIdx]); ok++; c[priceIdx].style.background="#e8f6ee"; setTimeout(()=>c[priceIdx].style.background="",1200); }
     else ng.push(code);
     if(!c[1].textContent.trim()){ const jp=await getJpName(code); if(jp) c[1].textContent=jp; }
     done++; msg.textContent=`取得中… ${done}/${total}`;
@@ -767,9 +842,11 @@ function fetchPricesKin(){ return updatePrices("t-kin","btn-fetch-kin","fetch-ms
 // 1行だけ現在値を更新(保有株・キンカブ共通、現在値は index 5)
 async function updateOneRow(btn){
   const tr=btn.closest("tr"), c=tr.children, code=c[0].textContent.trim();
-  const isKin=tr.closest("table").id==="t-kin", recalc=isKin?calcKin:calcHold, tid=isKin?"t-kin":"t-hold";
+  const tid=tr.closest("table").id;
+  const cfg={ "t-hold":{p:5,f:calcHold}, "t-kin":{p:5,f:calcKin}, "t-watch":{p:2,f:calcWatch} }[tid] || {p:5,f:calcHold};
+  const recalc=cfg.f;
   if(!code){ flash("コードを入力してください"); return; }
-  const price5=c[5], prev=price5.textContent; // 失敗時に元へ戻すため保持
+  const price5=c[cfg.p], prev=price5.textContent; // 現在値セル(表ごとに位置が違う)、失敗時に元へ戻すため保持
   btn.disabled=true; price5.textContent="…"; price5.style.color="#999";
   const price=await getPrice(code);
   price5.style.color="";
@@ -837,6 +914,117 @@ function openTradeKin(btn){
     flash(s==="売"?"売却を記録しました":"買い増しを記録しました");
   };
 }
+
+/* ---------- 買い予定(ウォッチリスト) ---------- */
+function addWatch(d={}){
+  const tb=document.querySelector("#t-watch tbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.code||""}</td>
+    <td class="txt nm" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.name||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false" data-ph="¥0">${d.now||""}</td>
+    <td contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false" data-ph="¥0">${d.target||""}</td>
+    <td class="calc c-status">-</td>
+    <td class="txt" contenteditable spellcheck="false" autocorrect="off" autocapitalize="off" writingsuggestions="false">${d.memo||""}</td>
+    <td class="act"><button class="btn-upd" onclick="updateOneRow(this)" title="この行の現在値を更新">🔄</button><button class="del" onclick="delRow(this,calcWatch)">削除</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelectorAll("[contenteditable]").forEach(c=>c.addEventListener("input",calcWatch));
+  tr.children[0].addEventListener("blur",e=>autoName(e.target, tr.children[1], tr.children[2], calcWatch)); // コード→銘柄名・現在値
+  calcWatch();
+}
+function calcWatch(){
+  document.querySelectorAll("#t-watch tbody tr").forEach(tr=>{
+    const c=tr.children, now=num(c[2]), target=num(c[3]);
+    if(target>0 && now>0){
+      if(now<=target){ c[4].innerHTML='<span class="watch-hit">買い時</span>'; tr.classList.add("hit"); }
+      else { const drop=(now-target)/now*100; c[4].textContent="あと "+yen(now-target)+"（-"+drop.toFixed(1)+"%）"; tr.classList.remove("hit"); }
+    } else { c[4].textContent="-"; tr.classList.remove("hit"); }
+  });
+  // 「買い時」の件数をタブに赤バッジ表示
+  const hits=document.querySelectorAll("#t-watch tbody tr.hit").length;
+  const badge=document.getElementById("watch-badge");
+  if(badge){ badge.textContent=hits||""; badge.style.display=hits?"inline-block":"none"; }
+  notifyWatchHits(); // 新たに買い時になった銘柄をデスクトップ通知
+}
+function fetchPricesWatch(){ return updatePrices("t-watch","btn-fetch-watch","fetch-msg-watch",calcWatch,2); }
+// 起動時の自動更新設定
+function setAutoUpdate(on){ localStorage.setItem("kabuAutoUpdate", on?"1":""); }
+function initAutoUpdate(){
+  const on = localStorage.getItem("kabuAutoUpdate")==="1";
+  const cb=document.getElementById("auto-upd"); if(cb) cb.checked=on;
+  if(on){ setTimeout(()=>{ fetchPrices(); fetchPricesKin(); fetchPricesWatch(); }, 500); } // 開いた直後に全銘柄を取得
+}
+
+/* ---------- ダークモード切替 ---------- */
+function applyTheme(t){
+  const dark=t==="dark";
+  document.documentElement.setAttribute("data-theme", dark?"dark":"light");
+  const b=document.getElementById("theme-btn");
+  if(b){ b.textContent = dark?"☀️":"🌙"; b.title = dark?"ライトモードに切替":"ダークモードに切替"; }
+  localStorage.setItem("kabuTheme", dark?"dark":"light");
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";
+  applyTheme(cur==="dark"?"light":"dark");
+}
+function initTheme(){ applyTheme(localStorage.getItem("kabuTheme")==="dark"?"dark":"light"); }
+
+/* ---------- 買い時のデスクトップ通知 ---------- */
+function setNotify(on){
+  const cb=document.getElementById("notify-upd");
+  if(on){
+    if(!("Notification" in window)){ alert("このブラウザはデスクトップ通知に対応していません。"); if(cb) cb.checked=false; return; }
+    Notification.requestPermission().then(p=>{
+      if(p==="granted"){ localStorage.setItem("kabuNotify","1"); notifyWatchHits(); }
+      else { alert("通知が許可されませんでした。ブラウザの設定から通知を許可してください。"); localStorage.setItem("kabuNotify",""); if(cb) cb.checked=false; }
+    });
+  } else { localStorage.setItem("kabuNotify",""); }
+}
+function initNotify(){
+  const on = localStorage.getItem("kabuNotify")==="1" && ("Notification" in window) && Notification.permission==="granted";
+  const cb=document.getElementById("notify-upd"); if(cb) cb.checked=on;
+}
+// 「買い時」になった銘柄を通知(前回通知済みは除外。買い時を外れた銘柄は解除して再通知可能に)
+function notifyWatchHits(){
+  if(localStorage.getItem("kabuNotify")!=="1") return;
+  if(!("Notification" in window) || Notification.permission!=="granted") return;
+  const hits=[...document.querySelectorAll("#t-watch tbody tr.hit")].map(tr=>{
+    const c=tr.children;
+    return {key:(c[0].textContent.trim()||c[1].textContent.trim()), name:(c[1].textContent.trim()||c[0].textContent.trim()), now:c[2].textContent.trim(), target:c[3].textContent.trim()};
+  }).filter(h=>h.key);
+  const keys=hits.map(h=>h.key);
+  let prev=[]; try{ prev=JSON.parse(localStorage.getItem("kabuNotified")||"[]"); }catch{}
+  const fresh=hits.filter(h=>!prev.includes(h.key));
+  if(fresh.length){
+    const body=fresh.map(h=>`${h.name}：現在 ${h.now}（目標 ${h.target}）`).join("\n");
+    try{ new Notification("🔔 買い時の銘柄があります", {body, tag:"kabu-watch"}); }catch(e){}
+  }
+  localStorage.setItem("kabuNotified", JSON.stringify(keys));
+}
+
+/* ---------- バックアップ促しリマインダー ---------- */
+function markBackup(){ localStorage.setItem("kabuLastBackup", new Date().toISOString()); localStorage.removeItem("kabuBackupSnooze"); hideBackupBanner(); }
+function hasSavedData(){ try{ const d=JSON.parse(localStorage.getItem("kabuData")||"{}"); return Object.values(d).some(a=>Array.isArray(a)&&a.length); }catch{ return false; } }
+function checkBackupReminder(){
+  if(!hasSavedData()) return;                              // データが無ければ促さない
+  const snooze=localStorage.getItem("kabuBackupSnooze");
+  if(snooze && Date.now() < +snooze) return;               // 「後で」スヌーズ中
+  const last=localStorage.getItem("kabuLastBackup"), DAY=86400000;
+  const stale = !last || (Date.now()-new Date(last).getTime()) > 30*DAY;
+  if(stale) showBackupBanner(!!last);
+}
+function showBackupBanner(hasLast){
+  if(document.getElementById("backup-banner")) return;
+  const msg = hasLast ? "前回のバックアップから30日以上経っています。" : "まだバックアップがありません。";
+  const bar=document.createElement("div");
+  bar.id="backup-banner";
+  bar.innerHTML=`<span>💾 ${msg} データはこのブラウザ内だけに保存されています。<b>バックアップ</b>をおすすめします。</span>
+    <span class="bb-actions"><button class="bb-do">⬇ バックアップ</button><button class="bb-later">後で</button></span>`;
+  document.body.appendChild(bar);
+  bar.querySelector(".bb-do").onclick=()=>exportJSON();     // 書き出し後 markBackup でバーは自動で消える
+  bar.querySelector(".bb-later").onclick=()=>{ localStorage.setItem("kabuBackupSnooze", String(Date.now()+7*86400000)); hideBackupBanner(); };
+}
+function hideBackupBanner(){ const b=document.getElementById("backup-banner"); if(b) b.remove(); }
 
 /* ---------- 配当 ---------- */
 function addDiv(d={}){
@@ -1120,7 +1308,7 @@ function drawHistory(){
   const Y=v=> H-padB-(H-padT-padB)*(v-mn)/rg;
   const pts=h.map((r,i)=>`${X(i).toFixed(1)},${Y(r.val).toFixed(1)}`).join(" ");
   const dots=h.map((r,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.val).toFixed(1)}" r="3" fill="#2563eb"/>`).join("");
-  chart.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;border:1px solid var(--line);border-radius:8px;background:#fff;">
+  chart.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;border:1px solid var(--line);border-radius:8px;background:var(--card);">
     <text x="${padL}" y="16" font-size="11" fill="#697586">評価総額の推移</text>
     <text x="6" y="${(Y(mx)+4).toFixed(1)}" font-size="10" fill="#697586">${yen(mx)}</text>
     <text x="6" y="${(Y(mn)+4).toFixed(1)}" font-size="10" fill="#697586">${yen(mn)}</text>
@@ -1161,13 +1349,15 @@ function gather(){
   const g=sel=>[...document.querySelectorAll(sel)].map(tr=>[...tr.children].slice(0,-1).map(td=>{
     const cb=td.querySelector('input[type=checkbox]'); if(cb) return cb.checked?"1":"";
     const s=td.querySelector("select");return s?s.value:td.textContent;}));
-  return {hold:g("#t-hold tbody tr"),kin:g("#t-kin tbody tr"),div:g("#t-div tbody tr"),trade:g("#t-trade tbody tr"),tradek:g("#t-tradek tbody tr")};
+  return {hold:g("#t-hold tbody tr"),kin:g("#t-kin tbody tr"),div:g("#t-div tbody tr"),trade:g("#t-trade tbody tr"),tradek:g("#t-tradek tbody tr"),watch:g("#t-watch tbody tr")};
 }
-function saveLocal(){
+// 内部呼び出しは静かに保存。手動の「💾 保存」ボタンのときだけトーストを出す。
+function saveLocal(showToast){
   localStorage.setItem("kabuData",JSON.stringify(gather()));
   touchUpdated();
-  flash("💾 ブラウザに保存しました");
+  if(showToast) flash("💾 ブラウザに保存しました");
 }
+function saveLocalManual(){ saveLocal(true); }
 // 最終更新日時
 function touchUpdated(){ localStorage.setItem("kabuUpdated", new Date().toISOString()); showUpdated(); }
 function showUpdated(){
@@ -1182,7 +1372,7 @@ function loadLocal(){
   apply(JSON.parse(raw));return true;
 }
 function apply(d){
-  document.querySelectorAll("#t-hold tbody tr,#t-kin tbody tr,#t-div tbody tr,#t-trade tbody tr,#t-tradek tbody tr").forEach(x=>x.remove());
+  document.querySelectorAll("#t-hold tbody tr,#t-kin tbody tr,#t-div tbody tr,#t-trade tbody tr,#t-tradek tbody tr,#t-watch tbody tr").forEach(x=>x.remove());
   (d.hold||[]).forEach(r=>{
     // 旧フォーマット(買付日なし=5列)との互換
     if(r.length<6) r=[r[0],r[1],"",r[2],r[3],r[4]];
@@ -1194,6 +1384,7 @@ function apply(d){
   (d.div||[]).forEach(r=>addDiv({date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]}));
   (d.trade||[]).forEach(r=>addTrade({date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6],nisa:r[9]==="1"}));
   (d.tradek||[]).forEach(r=>addTradeK({date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6],nisa:r[9]==="1"}));
+  (d.watch||[]).forEach(r=>addWatch({code:r[0],name:r[1],now:r[2],target:r[3],memo:r[5]}));
   formatAllMoney(); formatAllDates(); // 読込データを整形
   applyAllFilters();
 }
@@ -1202,6 +1393,7 @@ function exportJSON(){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="株式管理_"+new Date().toISOString().slice(0,10)+".json";a.click();
+  markBackup(); // バックアップ日時を記録し、促しバーを消す
 }
 function importJSON(inp){
   const f=inp.files[0];if(!f)return;
@@ -1345,7 +1537,9 @@ function sortTable(tid,idx,th){
   document.querySelectorAll("#"+tid+" thead th").forEach(h=>{ if(h!==th) delete h.dataset.dir; });
   th.dataset.dir=dir;
   const cellVal=tr=>{ const c=tr.children[idx]; const cb=c.querySelector('input[type=checkbox]'); if(cb) return cb.checked?"1":"0"; const s=c.querySelector("select"); return (s?s.value:c.textContent).trim(); };
-  const toNum=s=>{ const n=parseFloat(s.replace(/[¥,%\s]/g,"")); return isNaN(n)?null:n; };
+  // 日付(YYYY-MM-DD)は数値化せず文字列比較する。数値化するとparseFloatが最初の"-"で止まり年しか見ないため。
+  const isDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s);
+  const toNum=s=>{ if(isDate(s)) return null; const n=parseFloat(s.replace(/[¥,%\s]/g,"")); return isNaN(n)?null:n; };
   rows.sort((a,b)=>{
     const x=cellVal(a),y=cellVal(b), nx=toNum(x),ny=toNum(y);
     let cmp;
@@ -1358,7 +1552,7 @@ function sortTable(tid,idx,th){
   rows.forEach(r=>tb.appendChild(r));
   saveLocal();
 }
-["t-hold","t-kin","t-div","t-trade","t-tradek"].forEach(makeSortable);
+["t-hold","t-kin","t-div","t-trade","t-tradek","t-watch"].forEach(makeSortable);
 
 /* ---------- 初期化 ---------- */
 if(!loadLocal()){
@@ -1367,16 +1561,23 @@ if(!loadLocal()){
   addKin({code:"9984",name:"ソフトバンクグループ",date:"2026-03-01",invest:10000,buy:9000,now:9500});
   addDiv({date:"2026-06-15",code:"7203",name:"トヨタ自動車",amt:7600,memo:"中間配当"});
   addTrade({date:"2026-03-10",side:"買",code:"9432",name:"NTT",qty:300,price:150,acq:""});
+  addWatch({code:"6758",name:"ソニーグループ",now:3200,target:2800,memo:"3000円割れで検討"});
+  addWatch({code:"8306",name:"三菱UFJ",now:1500,target:1600,memo:"目標到達"});
 }
 formatAllMoney(); // 金額欄を¥・カンマ付きに整形
 formatAllDates();  // 日付欄をYYYY-MM-DDに整形
 applyAllFilters(); // 起動時にフィルターの年選択肢と件数を初期化
-// 起動時は各タブの年フィルタを「今年」に設定
-Object.keys(FILTER_CFG).forEach(tid=>{
+// 起動時、売買・配当タブの年フィルタだけ「今年」に設定
+// (保有株・キンカブは買付年に関係なく現在の保有を全件表示。年で隠すと合計・サマリーが過少になるため)
+["t-div","t-trade","t-tradek"].forEach(tid=>{
   const bar=getBar(tid), sel=bar&&bar.querySelector(".f-year");
   if(sel){ sel.value=String(new Date().getFullYear()); applyFilter(tid); }
 });
 showUpdated();      // 保存済みの最終更新日時を表示
+initTheme();        // ダーク/ライトのボタン表示を保存値に合わせる
+initNotify();       // 「買い時通知」トグルの状態を復元
+initAutoUpdate();   // 「起動時に更新」がONなら現在値を自動取得
+checkBackupReminder(); // 前回バックアップから30日以上ならバックアップを促す
 // タブをヘッダーの真下に固定(ヘッダーの高さぶんずらす)
 function setStickyOffsets(){
   const hd=document.querySelector("header"), tabs=document.querySelector(".tabs");
