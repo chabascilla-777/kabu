@@ -35,7 +35,6 @@
   .hdr-toggle input{accent-color:#818cf8;cursor:pointer;margin:0;}
   .tabs{display:flex;gap:7px;padding:14px 22px 12px;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;zoom:0.95;}
   .tab{
-    display:inline-flex;align-items:center;                 /* テキストとバッジを上下センター揃え */
     padding:8px 18px;border:1px solid var(--line);
     background:#fff;border-radius:999px;cursor:pointer;color:var(--sub);font-weight:600;transition:.15s;
   }
@@ -207,10 +206,6 @@
   :root[data-theme="dark"] .basics .sec{background:var(--card);}
   :root[data-theme="dark"] .basics .kcard,:root[data-theme="dark"] .basics .tip{background:#1f2739;}
   :root[data-theme="dark"] .basics .kformula{background:#232c3d;color:var(--ink);border-color:#313c4f;}
-  /* 明るい水色(#cfe0ff)がダークだと白く浮くので落ち着いた色に */
-  :root[data-theme="dark"] .btn-sm,:root[data-theme="dark"] .help > p,:root[data-theme="dark"] .help .tag,:root[data-theme="dark"] .basics .tag,:root[data-theme="dark"] .basics .lead{border-color:#313a52;}
-  /* var(--head)を文字色に使う箇所はダークだと背景と同化するため明色に上書き */
-  :root[data-theme="dark"] .basics .kdesc b,:root[data-theme="dark"] .basics .tip b,:root[data-theme="dark"] .year-sum .yr b{color:var(--ink);}
   :root[data-theme="dark"] .modal-box{background:var(--card);}
   :root[data-theme="dark"] .modal-title{color:var(--ink);}
   :root[data-theme="dark"] .m-cancel,:root[data-theme="dark"] .btn.ghost,:root[data-theme="dark"] .filters .f-clear{background:#2a3346;color:var(--ink);}
