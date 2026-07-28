@@ -22,7 +22,7 @@
   header{
     background:linear-gradient(120deg,#0f172a 0%,#1e293b 55%,#312e81 135%);color:#fff;padding:16px 22px;
     display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-    position:sticky;top:0;z-index:50;flex-shrink:0;box-shadow:0 2px 14px rgba(15,23,42,.28);
+    position:sticky;top:0;z-index:50;flex-shrink:0;box-shadow:0 2px 14px rgba(15,23,42,.28);zoom:0.9;
   }
   header h1{font-size:18px;margin:0;letter-spacing:.05em;font-weight:800;}
   header .tools{display:flex;gap:8px;flex-wrap:wrap;}
@@ -33,7 +33,7 @@
   header button:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);}
   .hdr-toggle{display:flex;align-items:center;gap:5px;color:#fff;font-size:12px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
   .hdr-toggle input{accent-color:#818cf8;cursor:pointer;margin:0;}
-  .tabs{display:flex;gap:7px;padding:14px 22px 12px;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;zoom:0.95;}
+  .tabs{display:flex;gap:7px;padding:14px 22px 12px;flex-wrap:wrap;position:sticky;top:0;z-index:45;background:var(--bg);flex-shrink:0;zoom:0.9;}
   .tab{
     display:inline-flex;align-items:center;                 /* テキストとバッジを上下センター揃え */
     padding:8px 18px;border:1px solid var(--line);
@@ -42,7 +42,7 @@
   .tab:hover{color:var(--accent);border-color:#c7cdea;}
   .tab.active{background:linear-gradient(180deg,#5b52e8,#4f46e5);color:#fff;border-color:transparent;box-shadow:0 3px 9px rgba(79,70,229,.38);}
   .tabbadge{display:none;background:#dc2626;color:#fff;font-size:10px;font-weight:700;min-width:17px;height:17px;line-height:17px;text-align:center;border-radius:9px;margin-left:6px;padding:0 4px;vertical-align:middle;animation:blink 1.6s ease-in-out infinite;}
-  main{padding:0 22px 16px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;zoom:0.95;}
+  main{padding:0 22px 16px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;zoom:0.9;}
   .panel{
     display:none;background:var(--card);border:1px solid var(--line);
     border-radius:14px;padding:18px;box-shadow:0 6px 22px rgba(15,23,42,.07);
@@ -87,6 +87,9 @@
   td.pos,.pos{color:var(--plus)!important;font-weight:600;}
   td.neg,.neg{color:var(--minus)!important;font-weight:600;}
   tfoot td{background:#eef2f7;font-weight:700;color:var(--ink);}
+  /* 行ホバー: 黄色(入力)・グレー(計算)の色を保ったまま横1行にうっすら色を重ねて見やすく */
+  tbody tr:hover td{box-shadow:inset 0 0 0 9999px rgba(79,70,229,.07);}
+  :root[data-theme="dark"] tbody tr:hover td{box-shadow:inset 0 0 0 9999px rgba(129,140,248,.13);}
   .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
   .filters input.f-kw{padding:6px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;min-width:180px;}
   .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#fff;color:var(--ink);}
@@ -1287,8 +1290,21 @@ function renderSummary(){
   } else bar.innerHTML='<span style="width:100%;background:#e3e8ef"></span>';
 }
 
-/* ---------- 資産推移(スナップショット) ---------- */
-function getHistory(){ try{ return JSON.parse(localStorage.getItem("kabuHistory")||"[]"); }catch{ return []; } }
+/* ---------- 資産推移(スナップショット・月ごと) ---------- */
+const ym = ds => (ds||"").slice(0,7);                       // "2026-07-10" → "2026-07"
+const ymLabel = m => { const p=(m||"").split("-"); return p.length>=2 ? `${p[0]}年${+p[1]}月` : m; }; // "2026-07" → "2026年7月"
+// 月単位で取得。旧データ(日単位/monthなし)は月に集約し、同月は最新日付の値を採用
+function getHistory(){
+  let h; try{ h=JSON.parse(localStorage.getItem("kabuHistory")||"[]"); }catch{ return []; }
+  if(!Array.isArray(h)) return [];
+  const byMonth={};
+  h.forEach(r=>{
+    const m = r.month || ym(r.date); if(!m) return;
+    const prev=byMonth[m];
+    if(!prev || (r.date||"") >= (prev.date||"")) byMonth[m]={month:m, date:r.date||m+"-01", val:r.val, grand:r.grand};
+  });
+  return Object.values(byMonth).sort((a,b)=>a.month.localeCompare(b.month));
+}
 function setHistory(h){ localStorage.setItem("kabuHistory",JSON.stringify(h)); }
 function recordSnapshot(){
   let val=0,cost=0,real=0,dv=0; // フィルターに関係なく全件で集計
@@ -1296,17 +1312,17 @@ function recordSnapshot(){
   document.querySelectorAll("#t-kin tbody tr").forEach(tr=>{const c=tr.children;const q=num(c[4])?num(c[3])/num(c[4]):0;val+=q*num(c[5]);cost+=num(c[3]);});
   document.querySelectorAll("#t-trade tbody tr, #t-tradek tbody tr").forEach(tr=>{const c=tr.children;if(c[1].querySelector("select").value==="売"){const a=num(c[6]);if(a)real+=(num(c[5])-a)*num(c[4]);}});
   document.querySelectorAll("#t-div tbody tr").forEach(tr=>dv+=num(tr.children[3]));
-  const grand=(val-cost)+real+dv, ds=today();
-  const h=getHistory(), i=h.findIndex(x=>x.date===ds), rec={date:ds,val:Math.round(val),grand:Math.round(grand)};
-  if(i>=0) h[i]=rec; else h.push(rec);
-  h.sort((a,b)=>a.date.localeCompare(b.date));
-  setHistory(h); drawHistory(); flash("資産を記録しました ("+ds+")");
+  const grand=(val-cost)+real+dv, ds=today(), m=ym(ds);
+  const h=getHistory(), i=h.findIndex(x=>x.month===m), rec={month:m,date:ds,val:Math.round(val),grand:Math.round(grand)};
+  if(i>=0) h[i]=rec; else h.push(rec);          // 同じ月は上書き
+  h.sort((a,b)=>a.month.localeCompare(b.month));
+  setHistory(h); drawHistory(); flash("資産を記録しました ("+ymLabel(m)+")");
 }
-function delSnapshot(ds){ setHistory(getHistory().filter(x=>x.date!==ds)); drawHistory(); }
+function delSnapshot(m){ setHistory(getHistory().filter(x=>x.month!==m)); drawHistory(); }
 function drawHistory(){
   const chart=document.getElementById("hist-chart"), list=document.getElementById("hist-list"); if(!chart) return;
   const h=getHistory();
-  if(!h.length){ chart.innerHTML='<p style="color:var(--sub);font-size:12px;margin:4px 0;">まだ記録がありません。「📸 今の資産を記録」で追加できます。</p>'; list.innerHTML=""; return; }
+  if(!h.length){ chart.innerHTML='<p style="color:var(--sub);font-size:12px;margin:4px 0;">まだ記録がありません。「📸 今の資産を記録」で今月分を追加できます（月ごとに記録・同じ月は上書き）。</p>'; list.innerHTML=""; return; }
   const W=680,H=200,padL=64,padR=20,padT=24,padB=28, n=h.length;
   const vals=h.map(x=>x.val), mn=Math.min(...vals), mx=Math.max(...vals), rg=(mx-mn)||1;
   const X=i=> n===1 ? (padL+(W-padL-padR)/2) : padL+(W-padL-padR)*i/(n-1);
@@ -1314,16 +1330,16 @@ function drawHistory(){
   const pts=h.map((r,i)=>`${X(i).toFixed(1)},${Y(r.val).toFixed(1)}`).join(" ");
   const dots=h.map((r,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.val).toFixed(1)}" r="3" fill="#2563eb"/>`).join("");
   chart.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;border:1px solid var(--line);border-radius:8px;background:var(--card);">
-    <text x="${padL}" y="16" font-size="11" fill="#697586">評価総額の推移</text>
+    <text x="${padL}" y="16" font-size="11" fill="#697586">評価総額の推移（月ごと）</text>
     <text x="6" y="${(Y(mx)+4).toFixed(1)}" font-size="10" fill="#697586">${yen(mx)}</text>
     <text x="6" y="${(Y(mn)+4).toFixed(1)}" font-size="10" fill="#697586">${yen(mn)}</text>
     <polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="2"/>${dots}
-    <text x="${padL}" y="${H-8}" font-size="10" fill="#697586">${h[0].date}</text>
-    <text x="${W-padR}" y="${H-8}" font-size="10" fill="#697586" text-anchor="end">${h[n-1].date}</text>
+    <text x="${padL}" y="${H-8}" font-size="10" fill="#697586">${h[0].month}</text>
+    <text x="${W-padR}" y="${H-8}" font-size="10" fill="#697586" text-anchor="end">${h[n-1].month}</text>
   </svg>`;
   list.innerHTML=[...h].reverse().map(r=>{
     const cls=r.grand>=0?"pos":"neg";
-    return `<div class="yr"><b>${r.date}</b>${yen(r.val)} <span class="${cls}">(${r.grand>=0?"+":""}${yen(r.grand)})</span> <span onclick="delSnapshot('${r.date}')" title="削除" style="cursor:pointer;color:#b42318;margin-left:6px;font-weight:700;">×</span></div>`;
+    return `<div class="yr"><b>${ymLabel(r.month)}</b>${yen(r.val)} <span class="${cls}">(${r.grand>=0?"+":""}${yen(r.grand)})</span> <span onclick="delSnapshot('${r.month}')" title="削除" style="cursor:pointer;color:#b42318;margin-left:6px;font-weight:700;">×</span></div>`;
   }).join("");
 }
 
