@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff">
+<title>株式管理（スマホ版）</title>
+<style>
+  :root{
+    --bg:#ffffff; --card:#ffffff; --line:#e8eaee; --field-line:#ccd2db; --sep:#dfe3ea; --ink:#1a1d21;
+    --sub:#6a7280; --accent:#2f6fed; --accent-ink:#ffffff; --accent-soft:#eaf1fe;
+    --field:#ffffff; --field-focus:#ffffff; --memo-bg:#eef4ff;
+    --plus:#dc2626; --minus:#2563eb; --good:#1a9c5b;
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  :root[data-theme="dark"]{
+    --bg:#10141b; --card:#10141b; --line:#232a35; --field-line:#39424f; --sep:#05070b; --ink:#eceef2;
+    --sub:#8b93a1; --accent:#5b8bf0; --accent-ink:#ffffff; --accent-soft:#18202e;
+    --field:#161b24; --field-focus:#1b212c; --memo-bg:#172234;
+    --plus:#ff6369; --minus:#7aa2ff; --good:#38ba7f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;
+    font-size:13px;line-height:1.5;display:flex;flex-direction:column;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  /* ===== 上部バー ===== */
+  .appbar{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--line);
+    padding:calc(env(safe-area-inset-top,0px) + 11px) 15px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:30;}
+  .brand{display:flex;align-items:center;gap:9px;}
+  .logo{width:28px;height:28px;border-radius:9px;background:linear-gradient(140deg,#4f8bf5,#2f6fed);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;}
+  .brand .t{font-size:14.5px;font-weight:800;letter-spacing:-.01em;}
+  .brand .t span{font-size:9.5px;font-weight:600;color:var(--sub);margin-left:5px;}
+  .acts{display:flex;gap:8px;}
+  .icobtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:transparent;
+    color:var(--ink);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .icobtn:active{background:var(--field);}
+  .icobtn svg{width:18px;height:18px;}
+  /* ===== メイン ===== */
+  main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 90px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  /* 合計バー(位置固定) */
+  .totbar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;}
+  .totbar .lbl{font-size:10.5px;color:var(--sub);letter-spacing:.06em;font-weight:700;}
+  .totbar .big{font-size:33px;font-weight:800;display:block;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .totbar .years{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .totbar .years .yr{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:11px;font-variant-numeric:tabular-nums;
+    cursor:pointer;color:var(--ink);font-family:inherit;display:inline-flex;align-items:center;gap:5px;min-height:28px;}
+  .totbar .years .yr b{color:var(--sub);font-weight:600;}
+  .totbar .years .yr.active{background:var(--accent);border-color:var(--accent);}
+  .totbar .years .yr.active,.totbar .years .yr.active b,.totbar .years .yr.active span{color:#fff!important;}
+  .fetchmsg{font-size:11px;color:var(--sub);text-align:center;padding:10px 16px 2px;}
+  .fetchmsg:empty{display:none;}
+  /* ===== カード(リスト項目) ===== */
+  .card{padding:14px 15px 16px;border-bottom:16px solid var(--sep);}
+  .card:last-child{border-bottom:none;}
+  .card input.datetop{border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:600;
+    min-height:auto;padding:0 2px;margin-bottom:9px;width:auto;font-variant-numeric:tabular-nums;}
+  .chead{display:flex;align-items:stretch;gap:8px;margin-bottom:12px;}
+  /* コード＋銘柄名を1つの枠に */
+  .ident{flex:1;min-width:0;display:flex;align-items:stretch;border:1px solid var(--field-line);border-radius:9px;overflow:hidden;transition:.12s;}
+  .ident:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
+  .ident input{border:none!important;border-radius:0;background:transparent;box-shadow:none!important;}
+  .card input{font-size:16px;padding:10px 12px;border:1px solid var(--field-line);border-radius:8px;
+    background:var(--field);color:var(--ink);width:100%;min-height:42px;transition:.12s;font-weight:500;}
+  .card input::placeholder{color:var(--sub);opacity:.7;}
+  .card input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
+  .card input.code-sub{flex:0 0 76px;width:76px;text-align:center;font-size:14px;font-weight:600;color:var(--sub);padding:6px 8px;}
+  .card input.name-inp{flex:1;min-width:0;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .s-qty,.s-price,.s-acq,.d-amt,.w-now,.w-target{font-variant-numeric:tabular-nums;}
+  .card input.memo-inp{font-weight:400;font-size:12px;background:var(--memo-bg);}
+  /* 削除・口座(ゴミ箱と同寸) */
+  .del,.acct{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;
+    border:1px solid var(--field-line);border-radius:9px;background:var(--card);cursor:pointer;transition:.12s;}
+  .del svg{width:19px;height:19px;stroke:var(--plus);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .del:active,.acct:active{background:var(--bg);}
+  .acct{color:var(--sub);font-size:15px;font-weight:800;}
+  .acct.on{background:var(--good);border-color:var(--good);color:#fff;}
+  /* 金額欄: 先頭に¥ */
+  .money{position:relative;}
+  .money .yc{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:14px;font-weight:600;pointer-events:none;}
+  .money input{padding-left:24px;}
+  /* フィールド */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .grid3{display:grid;grid-template-columns:0.62fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+  .fld{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;min-width:0;}
+  .grid2 .fld,.grid3 .fld{margin-bottom:0;}
+  .fld > label{font-size:11px;color:var(--sub);font-weight:600;}
+  /* 買い予定: メモ右下に状況バッジ */
+  .memo-wrap .status{display:flex;justify-content:flex-end;align-items:center;margin-top:8px;}
+  .badge-buy{display:inline-flex;align-items:center;gap:5px;background:var(--plus);color:#fff;
+    font-weight:800;font-size:11px;padding:4px 10px;border-radius:7px;}
+  .badge-buy::before{content:"";width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .status .far{color:var(--sub);font-size:11px;font-weight:600;}
+  .memo-wrap:has(.w-status:empty) .status{display:none;}
+  /* 実現損益 */
+  .pl-line{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--line);}
+  .pl-lab{font-size:12px;color:var(--sub);font-weight:600;}
+  .s-pl{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--sub);}
+  .pos{color:var(--plus);} .neg{color:var(--minus);}
+  /* ===== FAB(右下固定) ===== */
+  .fab{position:fixed;right:16px;bottom:calc(70px + var(--safe-b));width:56px;height:56px;border:none;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:30px;font-weight:300;line-height:1;cursor:pointer;z-index:35;
+    box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 45%,transparent);display:flex;align-items:center;justify-content:center;}
+  .fab:active{filter:brightness(.95);transform:scale(.96);}
+  /* ===== 株の基本 ===== */
+  .basics{padding:16px;font-size:13px;line-height:1.7;}
+  .basics h2{font-size:17px;margin:0 0 12px;}
+  .basics .lead{background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin-bottom:14px;color:var(--ink);}
+  .basics .sec{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .basics .sec h4{margin:0;padding:11px 14px;background:var(--field);font-size:13.5px;font-weight:700;border-bottom:1px solid var(--line);}
+  .basics .body{padding:12px 14px;}
+  .basics .body ul{margin:0;padding-left:18px;}
+  .basics .body li{margin:6px 0;}
+  .basics .kcard{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:9px;}
+  .basics .kcard:last-child{margin-bottom:0;}
+  .basics .kname{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:12px;padding:2px 10px;border-radius:6px;margin-bottom:6px;}
+  .basics .kformula{font-size:12px;background:var(--field);border:1px solid var(--line);border-radius:6px;padding:5px 9px;margin-bottom:6px;font-weight:600;}
+  .basics .kdesc{font-size:12px;color:var(--sub);}
+  .basics b{color:var(--ink);}
+  .basics .warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 13px;font-size:12px;color:#7c4a13;line-height:1.7;}
+  :root[data-theme="dark"] .basics .warn{background:#3a2f1c;border-color:#5c4a2a;color:#e6c48a;}
+  /* ===== 下部タブ(シンプル) ===== */
+  .bottomnav{flex-shrink:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--safe-b);z-index:30;}
+  .bottomnav button{flex:1;background:none;border:none;color:var(--sub);font-size:10px;font-weight:600;
+    padding:7px 1px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;}
+  .bottomnav button.active{color:var(--accent);}
+  .bottomnav .ic{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+  .bottomnav .ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .bottomnav .nbadge{position:absolute;top:4px;left:50%;margin-left:7px;background:var(--plus);color:#fff;
+    font-size:9px;font-weight:800;min-width:15px;height:15px;line-height:15px;border-radius:8px;padding:0 4px;display:none;}
+  /* ===== メニューシート ===== */
+  .sheet-ov{position:fixed;inset:0;background:rgba(10,13,18,.5);display:none;z-index:50;align-items:flex-end;backdrop-filter:blur(3px);}
+  .sheet-ov.show{display:flex;animation:ov-in .22s ease;}
+  .sheet-ov.closing{animation:ov-out .22s ease forwards;}
+  .sheet{background:var(--card);width:100%;border-radius:22px 22px 0 0;padding:6px 18px calc(18px + var(--safe-b));box-shadow:0 -10px 40px rgba(0,0,0,.3);animation:up .22s ease;}
+  .sheet-ov.closing .sheet{animation:down .22s ease forwards;}
+  @keyframes up{from{transform:translateY(100%)}to{transform:none}}
+  @keyframes down{from{transform:none}to{transform:translateY(100%)}}
+  @keyframes ov-in{from{opacity:0}to{opacity:1}}
+  @keyframes ov-out{from{opacity:1}to{opacity:0}}
+  .sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--field-line);margin:8px auto 12px;cursor:pointer;}
+  .sheet h3{margin:0 0 8px;font-size:15px;font-weight:800;}
+  .sheet .item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 2px;border-top:1px solid var(--line);font-size:15px;font-weight:600;}
+  .sheet .item:first-of-type{border-top:none;}
+  .sheet .item .lab{display:flex;align-items:center;gap:10px;}
+  .sheet .sbtn{background:var(--accent-soft);color:var(--accent);border:none;border-radius:11px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;min-height:42px;}
+  .sw{position:relative;width:50px;height:30px;flex-shrink:0;}
+  .sw input{opacity:0;width:0;height:0;position:absolute;}
+  .sw span{position:absolute;inset:0;background:var(--field-line);border-radius:30px;transition:.2s;cursor:pointer;}
+  .sw span::before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .sw input:checked + span{background:var(--good);}
+  .sw input:checked + span::before{transform:translateX(20px);}
+  .sheet .close{width:100%;margin-top:16px;min-height:48px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:13px;font-size:15px;font-weight:800;cursor:pointer;}
+  .toast{position:fixed;left:50%;bottom:calc(84px + var(--safe-b));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.3);}
+  input{-webkit-appearance:none;appearance:none;}
+  input[type=date]{-webkit-appearance:none;}
+</style>
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("kabuSpTheme")==="dark"?"dark":"light");}catch(e){}</script>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="brand">
+    <div class="logo">株</div>
+    <div class="t">株式管理<span>スマホ版</span></div>
+  </div>
+  <div class="acts">
+    <button class="icobtn" id="hdr-update" onclick="updateWatchAll()" title="現在値を更新" aria-label="現在値を更新">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v5h-5"/></svg>
+    </button>
+    <button class="icobtn" onclick="openMenu()" title="メニュー" aria-label="メニュー">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="panel active" id="p-watch">
+    <div class="fetchmsg" id="wmsg"></div>
+    <div id="watch-list"></div>
+  </section>
+  <section class="panel" id="p-trade">
+    <div class="totbar" id="tot-trade"></div>
+    <div id="trade-list"></div>
+  </section>
+  <section class="panel" id="p-tradek">
+    <div class="totbar" id="tot-tradek"></div>
+    <div id="tradek-list"></div>
+  </section>
+  <section class="panel" id="p-div">
+    <div class="totbar" id="tot-div"></div>
+    <div id="div-list"></div>
+  </section>
+  <section class="panel" id="p-basics">
+    <div class="basics">
+      <h2>株の基本ガイド</h2>
+      <div class="lead">株式投資でよく使う用語・指標や、覚えておきたい考え方をやさしくまとめました。数字はあくまで一般的な<b>目安</b>で、業種や状況で適切な水準は変わります。</div>
+      <div class="sec"><h4>📗 そもそも株とは</h4><div class="body"><ul>
+        <li><b>株式</b>は会社の所有権を細かく分けたもの。持つと会社の一部オーナーになり、<b>値上がり益</b>や<b>配当</b>を受け取れます。</li>
+        <li><b>株価</b>は買いたい人・売りたい人のバランスで日々動きます。業績・ニュース・景気・金利などが影響します。</li>
+        <li><b>単元株</b>：通常は100株単位で売買。1株や「金額指定（キンカブ）」で少額から買える仕組みもあります。</li>
+      </ul></div></div>
+      <div class="sec"><h4>📊 覚えておきたい指標</h4><div class="body">
+        <div class="kcard"><span class="kname">PER</span><div class="kformula">株価 ÷ 1株利益(EPS)</div><div class="kdesc">利益の<b>何年分で株価を回収できるか</b>の目安。低いほど割安（日本株は15倍前後が目安）。</div></div>
+        <div class="kcard"><span class="kname">PBR</span><div class="kformula">株価 ÷ 1株純資産(BPS)</div><div class="kdesc">会社の<b>解散価値に対する株価</b>。1倍が基準で、1倍割れは割安とされることも。</div></div>
+        <div class="kcard"><span class="kname">ROE</span><div class="kformula">純利益 ÷ 自己資本</div><div class="kdesc"><b>株主のお金をどれだけ効率よく利益にしたか</b>。8〜10%以上が目安。</div></div>
+        <div class="kcard"><span class="kname">EPS</span><div class="kformula">純利益 ÷ 株式数</div><div class="kdesc"><b>1株が生む利益</b>。伸びていると成長のサイン。</div></div>
+        <div class="kcard"><span class="kname">BPS</span><div class="kformula">純資産 ÷ 株式数</div><div class="kdesc"><b>1株あたりの会社の純資産</b>。</div></div>
+        <div class="kcard"><span class="kname">配当利回り</span><div class="kformula">1株配当 ÷ 株価 ×100</div><div class="kdesc"><b>投資額に対して年何％の配当がもらえるか</b>。高すぎる場合は減配リスクの裏返しのことも。</div></div>
+        <div class="kcard"><span class="kname">時価総額</span><div class="kformula">株価 × 発行済株式数</div><div class="kdesc"><b>会社全体の値段＝規模</b>。大きいほど安定的、小さいほど値動きが大きい傾向。</div></div>
+      </div></div>
+      <div class="sec"><h4>🏦 口座と税金・制度</h4><div class="body"><ul>
+        <li><b>特定口座（源泉徴収あり）</b>：利益や配当に約 <b>20.315%</b> が自動で課税され、原則確定申告は不要。</li>
+        <li><b>NISA</b>：一定の非課税枠内なら売却益・配当が <b>非課税</b>（枠・対象は制度改定で変わるため最新情報を確認）。</li>
+        <li><b>損益通算・繰越</b>：特定口座の損失は同年の利益と相殺したり、確定申告で最大3年繰り越せる場合があります（NISAは対象外）。</li>
+      </ul></div></div>
+      <div class="sec"><h4>💹 損益の考え方</h4><div class="body"><ul>
+        <li><b>評価損益（含み損益）</b>：まだ売っていない、今の株価での“見かけ”の損益。日々変わります。</li>
+        <li><b>実現損益</b>：実際に売って <b>確定した</b> 損益。税金や年間収支はこちらが基準。</li>
+        <li><b>平均取得単価</b>：同じ銘柄を複数回買ったときの平均の買値。損益計算の基準。</li>
+        <li><b>配当</b>：保有しているだけで受け取れる利益の分配。長期保有・再投資で効果が積み上がります。</li>
+      </ul></div></div>
+      <div class="sec"><h4>💡 覚えておくと役立つ心得</h4><div class="body"><ul>
+        <li><b>分散する</b>：1銘柄・1業種に集中せず複数に分けるとリスクを抑えられます。</li>
+        <li><b>長期・積立</b>：短期の値動きに一喜一憂せず、時間を味方に。</li>
+        <li><b>余剰資金で</b>：生活費や近く使う予定のお金は投資に回さない。</li>
+        <li><b>「安い＝お得」とは限らない</b>：低PER・高配当には理由がある場合も。背景を確認。</li>
+      </ul></div></div>
+      <div class="warn">⚠️ 本ページは学習用の一般的な説明です。数値の目安は状況で変わり、特定銘柄の売買を勧めるものではありません。投資はご自身の判断と責任で行ってください。</div>
+    </div>
+  </section>
+</main>
+
+<button class="fab" id="fab" onclick="addCurrent()" aria-label="追加">＋</button>
+
+<nav class="bottomnav">
+  <button data-t="watch" class="active" onclick="switchTab('watch')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>買い予定<span class="nbadge" id="nbadge"></span></button>
+  <button data-t="trade" onclick="switchTab('trade')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 5v13"/></svg></span>売却株</button>
+  <button data-t="tradek" onclick="switchTab('tradek')"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M12 13v4M9.5 14h5"/></svg></span>ｷﾝｶﾌﾞ</button>
+  <button data-t="div" onclick="switchTab('div')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.4"/><path d="M6 12h.01M18 12h.01"/></svg></span>配当</button>
+  <button data-t="basics" onclick="switchTab('basics')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 6C10 4.5 6.5 4.5 4 5v14c2.5-.5 6 0 8 1.5 2-1.5 5.5-2 8-1.5V5c-2.5-.5-6-.5-8 1z"/><path d="M12 6v14.5"/></svg></span>基本</button>
+</nav>
+
+<div class="sheet-ov" id="menu-ov" onclick="if(event.target===this)closeMenu()">
+  <div class="sheet">
+    <div class="grab" onclick="closeMenu()"></div>
+    <h3>メニュー</h3>
+    <div class="item"><span class="lab">🔔 買い時通知</span><label class="sw"><input type="checkbox" id="notify-sw" onchange="setNotify(this.checked)"><span></span></label></div>
+    <div class="item"><span class="lab">🌙 ダークモード</span><label class="sw"><input type="checkbox" id="theme-sw" onchange="applyTheme(this.checked?'dark':'light')"><span></span></label></div>
+    <div class="item"><span class="lab">💾 手動で保存</span><button class="sbtn" onclick="saveLocal(true)">保存</button></div>
+    <div class="item"><span class="lab">⬇ バックアップ（書き出し）</span><button class="sbtn" onclick="exportJSON()">書出</button></div>
+    <div class="item"><span class="lab">⬆ 読込（バックアップから）</span><button class="sbtn" onclick="document.getElementById('imp').click()">読込</button></div>
+    <input id="imp" type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+    <button class="close" onclick="closeMenu()">閉じる</button>
+  </div>
+</div>
+
+<script>
+/* ===== ヘルパー ===== */
+const yen = n => "¥" + Math.round(n).toLocaleString("ja-JP");
+const numv = v => parseFloat(String(v==null?"":v).replace(/[^0-9.\-]/g,""))||0;
+const today = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+// 金額欄: 3桁区切りの「,」を付ける／編集中は外す
+function fmtMoney(inp){
+  let v=inp.value.replace(/[^0-9.\-]/g,""); if(v===""){ inp.value=""; return; }
+  const neg=v.indexOf("-")===0; v=v.replace(/-/g,"");
+  let p=v.split("."), int=p[0]||"", dec=p[1];
+  int=int.replace(/^0+(?=\d)/,"").replace(/\B(?=(\d{3})+(?!\d))/g,",");
+  inp.value=(neg?"-":"")+(int||"0")+((dec!==undefined&&dec!=="")?"."+dec:"");
+}
+function stripMoney(inp){ inp.value=inp.value.replace(/,/g,""); }
+document.addEventListener("focusin",e=>{ if(e.target.matches&&e.target.matches(".money input")) stripMoney(e.target); });
+document.addEventListener("focusout",e=>{ if(e.target.matches&&e.target.matches(".money input")) fmtMoney(e.target); });
+let activeTab="watch";
+const CY=String(new Date().getFullYear());
+const filterYear={trade:CY,tradek:CY,div:CY};   // 起動時は今年のみ表示（""＝すべて）
+function setYear(tab,y){ filterYear[tab]=y; if(tab==="div")calcDiv(); else calcSale(tab); }
+// 合計バー描画（年チップをタップで絞り込み・「すべて」付き）
+function renderTot(boxId,label,total,byYear,tab,colored){
+  const fy=filterYear[tab], years=Object.keys(byYear).sort().reverse();
+  const chips=`<button class="yr${fy===""?" active":""}" onclick="setYear('${tab}','')">すべて</button>`+
+    years.map(y=>`<button class="yr${fy===y?" active":""}" onclick="setYear('${tab}','${y}')"><b>${y}${y!=="日付なし"?"年":""}</b><span${colored?` class="${byYear[y]>=0?"pos":"neg"}"`:""}>${yen(byYear[y])}</span></button>`).join("");
+  document.getElementById(boxId).innerHTML=`<span class="lbl">${label}</span><span class="big ${colored?(total>=0?"pos":"neg"):""}">${yen(total)}</span><div class="years">${chips}</div>`;
+}
+
+/* ===== 現在値の自動取得 ===== */
+const PROXIES=[
+  u=>"https://api.codetabs.com/v1/proxy/?quest="+u,
+  u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+  u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
+  u=>"https://thingproxy.freeboard.io/fetch/"+u,
+  u=>"https://api.cors.lol/?url="+encodeURIComponent(u),
+  u=>"https://proxy.cors.sh/"+u,
+];
+async function pfetch(url,ms=7000){ const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
+  try{ return await fetch(url,{cache:"no-store",signal:ctl.signal}); } finally{ clearTimeout(t); } }
+async function fetchViaProxies(url,parse){
+  const tries=PROXIES.map(p=>pfetch(p(url)).then(async r=>{ if(!r.ok)throw 0; const v=await parse(r); if(v==null||v==="")throw 0; return v; }));
+  try{ return await Promise.any(tries); }catch{ return null; } }
+const isJpCode = c => /^\d{3}[0-9A-Z]$/i.test((c||"").trim());
+async function getQuote(code){
+  const sym=isJpCode(code)?code.trim().toUpperCase()+".T":code;
+  return fetchViaProxies("https://query1.finance.yahoo.com/v8/finance/chart/"+sym+"?interval=1d&range=1d", async r=>{
+    const j=await r.json(),m=j?.chart?.result?.[0]?.meta; if(!m)return null;
+    return {price:(typeof m.regularMarketPrice==="number"?m.regularMarketPrice:null),name:m.shortName||m.longName||null}; }); }
+async function getPrice(code){
+  const s=[];
+  if(isJpCode(code)) s.push(fetchViaProxies("https://stooq.com/q/l/?s="+code.trim().toLowerCase()+".jp&f=sl1&e=csv", async r=>{
+    const t=(await r.text()).trim(); const v=parseFloat(t.substring(t.indexOf(",")+1).replace(/[^0-9.]/g,"")); return v>0?v:null; }));
+  s.push(getQuote(code).then(q=>q&&q.price!=null?q.price:null));
+  try{ return await Promise.any(s.map(p=>p.then(v=>{ if(v==null)throw 0; return v; }))); }catch{ return null; } }
+async function getJpName(code){
+  const sym=isJpCode(code)?code.trim().toUpperCase()+".T":code;
+  return fetchViaProxies("https://finance.yahoo.co.jp/quote/"+sym, async r=>{
+    const m=(await r.text()).match(/<title>([^<]+)<\/title>/); if(!m)return null;
+    const name=m[1].split("【")[0].trim().replace(/[(（]株[)）]/g,"").trim(); return (name&&!/Yahoo/.test(name))?name:null; }); }
+async function runPool(items,worker,c=4){ let i=0; await Promise.all(Array.from({length:Math.min(c,items.length)},async()=>{ while(i<items.length){ const idx=i++; await worker(items[idx]); } })); }
+
+/* ===== 買い予定 ===== */
+function addWatch(d={},atTop){
+  const box=document.getElementById("watch-list");
+  const card=document.createElement("div"); card.className="card"; card.dataset.kind="watch";
+  card.innerHTML=`
+    <div class="chead">
+      <div class="ident">
+        <input class="w-code code-sub" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
+        <input class="w-name name-inp" placeholder="銘柄名" autocomplete="off">
+      </div>
+      <button class="del" onclick="delCard(this)" aria-label="削除"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg></button>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>現在値</label><div class="money"><span class="yc">¥</span><input class="w-now" type="text" inputmode="decimal"></div></div>
+      <div class="fld"><label>買いたい価格</label><div class="money"><span class="yc">¥</span><input class="w-target" type="text" inputmode="decimal"></div></div>
+    </div>
+    <div class="memo-wrap"><input class="w-memo memo-inp" placeholder="メモを入力する" autocomplete="off"><div class="status"><span class="w-status far">-</span></div></div>`;
+  atTop&&box.firstChild ? box.insertBefore(card,box.firstChild) : box.appendChild(card);
+  const q=s=>card.querySelector(s);
+  q(".w-code").value=d.code||""; q(".w-name").value=d.name||""; q(".w-now").value=d.now||""; q(".w-target").value=d.target||""; q(".w-memo").value=d.memo||"";
+  card.querySelectorAll(".money input").forEach(fmtMoney);
+  card.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ calcWatch(); scheduleSave(); }));
+  q(".w-code").addEventListener("blur",()=>autoFill(card,"w"));
+  calcWatch();
+}
+function calcWatch(){
+  let hits=0;
+  document.querySelectorAll('#watch-list .card').forEach(card=>{
+    const q=s=>card.querySelector(s), now=numv(q(".w-now").value), target=numv(q(".w-target").value), st=q(".w-status");
+    if(target>0&&now>0){
+      if(now<=target){ st.className="w-status"; st.innerHTML='<span class="badge-buy">買い時</span>'; card.classList.add("hit"); hits++; }
+      else { const drop=(now-target)/now*100; st.className="w-status far"; st.textContent="あと "+yen(now-target)+"（-"+drop.toFixed(1)+"%）"; card.classList.remove("hit"); }
+    } else { st.className="w-status far"; st.textContent=""; card.classList.remove("hit"); }
+  });
+  const b=document.getElementById("nbadge"); b.textContent=hits||""; b.style.display=hits?"block":"none";
+  notifyWatchHits();
+}
+async function updateWatchAll(){
+  const cards=[...document.querySelectorAll('#watch-list .card')].filter(c=>c.querySelector(".w-code").value.trim());
+  const msg=document.getElementById("wmsg"), btn=document.getElementById("hdr-update");
+  if(!cards.length){ msg.textContent="買い予定に銘柄がありません"; return; }
+  btn.disabled=true; let done=0,ok=0; const ng=[],total=cards.length; msg.textContent=`取得中… 0/${total}`;
+  await runPool(cards, async(card)=>{
+    const q=s=>card.querySelector(s), code=q(".w-code").value.trim();
+    const price=await getPrice(code); if(price!=null){ q(".w-now").value=price; ok++; } else ng.push(code);
+    if(!q(".w-name").value.trim()){ const jp=await getJpName(code); if(jp) q(".w-name").value=jp; }
+    done++; msg.textContent=`取得中… ${done}/${total}`;
+  });
+  btn.disabled=false; calcWatch(); saveLocal();
+  const d=new Date(), st=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  localStorage.setItem("kabuSpUpdated",st);
+  msg.textContent=`更新${ok}件`+(ng.length?` / 失敗:${ng.join(",")}`:"")+`　（更新 ${st}）`;
+}
+function showLastUpdated(){ const st=localStorage.getItem("kabuSpUpdated"); if(st) document.getElementById("wmsg").textContent="最終更新 "+st; }
+
+/* ===== 売却履歴 ===== */
+function addSale(tab,d={}){
+  const box=document.getElementById(tab+"-list");
+  const card=document.createElement("div"); card.className="card"; card.dataset.kind=tab;
+  const qtyLabel=tab==="tradek"?"株数(小数可)":"株数";
+  card.innerHTML=`
+    <input class="s-date datetop" type="date">
+    <div class="chead">
+      <div class="ident">
+        <input class="s-code code-sub" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
+        <input class="s-name name-inp" placeholder="銘柄名" autocomplete="off">
+      </div>
+      <button type="button" class="acct" onclick="toggleAcct(this)">特</button>
+      <button class="del" onclick="delCard(this)" aria-label="削除"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg></button>
+    </div>
+    <div class="grid3">
+      <div class="fld"><label>${qtyLabel}</label><input class="s-qty" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="fld"><label>取得単価</label><div class="money"><span class="yc">¥</span><input class="s-acq" type="text" inputmode="decimal"></div></div>
+      <div class="fld"><label>約定単価</label><div class="money"><span class="yc">¥</span><input class="s-price" type="text" inputmode="decimal"></div></div>
+    </div>
+    <div class="pl-line"><span class="pl-lab">実現損益</span><b class="s-pl">-</b></div>`;
+  box.appendChild(card);
+  const q=s=>card.querySelector(s);
+  q(".s-date").value=d.date||today(); q(".s-code").value=d.code||""; q(".s-name").value=d.name||"";
+  q(".s-qty").value=d.qty||""; q(".s-price").value=d.price||""; q(".s-acq").value=d.acq||"";
+  card.querySelectorAll(".money input").forEach(fmtMoney);
+  if(d.nisa){ const a=q(".acct"); a.classList.add("on"); a.textContent="N"; }
+  card.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ calcSale(tab); scheduleSave(); }));
+  q(".s-date").addEventListener("change",()=>{ sortByDate(tab+"-list",".s-date"); saveLocal(); });
+  q(".s-code").addEventListener("blur",()=>autoFill(card,"s"));
+  calcSale(tab);
+}
+function toggleAcct(btn){ const on=btn.classList.toggle("on"); btn.textContent=on?"N":"特"; saveLocal(); }
+function calcSale(tab){
+  const fy=filterYear[tab]; let total=0; const byYear={};
+  document.querySelectorAll('#'+tab+'-list .card').forEach(card=>{
+    const q=s=>card.querySelector(s), qty=numv(q(".s-qty").value), price=numv(q(".s-price").value), acq=numv(q(".s-acq").value), plEl=q(".s-pl");
+    const y=(q(".s-date").value||"").slice(0,4)||"日付なし"; let pl=null;
+    if(acq>0&&qty>0&&price>0){ pl=(price-acq)*qty; plEl.textContent=yen(pl); plEl.className="s-pl "+(pl>=0?"pos":"neg"); byYear[y]=(byYear[y]||0)+pl; }
+    else { plEl.textContent=(acq||price||qty)?"入力してください":"-"; plEl.className="s-pl"; }
+    const show=(fy===""||y===fy); card.style.display=show?"":"none";
+    if(show&&pl!=null) total+=pl;
+  });
+  renderTot("tot-"+tab,"実現損益 合計",total,byYear,tab,true);
+}
+
+/* ===== 配当金 ===== */
+function addDiv(d={}){
+  const box=document.getElementById("div-list");
+  const card=document.createElement("div"); card.className="card"; card.dataset.kind="div";
+  card.innerHTML=`
+    <input class="d-date datetop" type="date">
+    <div class="chead">
+      <div class="ident">
+        <input class="d-code code-sub" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
+        <input class="d-name name-inp" placeholder="銘柄名" autocomplete="off">
+      </div>
+      <button class="del" onclick="delCard(this)" aria-label="削除"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg></button>
+    </div>
+    <div class="fld"><label>受取額(税引後)</label><div class="money"><span class="yc">¥</span><input class="d-amt" type="text" inputmode="decimal"></div></div>
+    <input class="d-memo memo-inp" placeholder="メモを入力する" autocomplete="off">`;
+  box.appendChild(card);
+  const q=s=>card.querySelector(s);
+  q(".d-date").value=d.date||today(); q(".d-code").value=d.code||""; q(".d-name").value=d.name||""; q(".d-amt").value=d.amt||""; q(".d-memo").value=d.memo||"";
+  card.querySelectorAll(".money input").forEach(fmtMoney);
+  card.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ calcDiv(); scheduleSave(); }));
+  q(".d-date").addEventListener("change",()=>{ sortByDate("div-list",".d-date"); saveLocal(); });
+  q(".d-code").addEventListener("blur",()=>autoFill(card,"d"));
+  calcDiv();
+}
+function calcDiv(){
+  const fy=filterYear.div; let total=0; const byYear={};
+  document.querySelectorAll('#div-list .card').forEach(card=>{
+    const amt=numv(card.querySelector(".d-amt").value);
+    const y=(card.querySelector(".d-date").value||"").slice(0,4)||"日付なし"; if(amt) byYear[y]=(byYear[y]||0)+amt;
+    const show=(fy===""||y===fy); card.style.display=show?"":"none";
+    if(show) total+=amt;
+  });
+  renderTot("tot-div","受取配当 合計",total,byYear,"div",false);
+}
+
+/* ===== 共通 ===== */
+function sortByDate(listId,sel){
+  const box=document.getElementById(listId);
+  [...box.children].sort((a,b)=>((b.querySelector(sel)?.value||"").localeCompare(a.querySelector(sel)?.value||""))).forEach(c=>box.appendChild(c));
+}
+async function autoFill(card,kind){
+  const q=s=>card.querySelector(s);
+  const codeEl=q("."+kind+"-code"), nameEl=q("."+kind+"-name"), code=codeEl.value.trim(); if(!code)return;
+  const needName=!nameEl.value.trim(), needPrice=kind==="w"&&!q(".w-now").value.trim();
+  if(!needName&&!needPrice)return;
+  if(needName){ nameEl.placeholder="取得中…"; let name=await getJpName(code); if(!name){ const g=await getQuote(code); name=g&&g.name; } nameEl.placeholder=""; if(name)nameEl.value=name; }
+  if(needPrice){ const p=await getPrice(code); if(p!=null)q(".w-now").value=p; }
+  if(kind==="w")calcWatch(); else if(kind==="d")calcDiv(); else calcSale(card.dataset.kind);
+  saveLocal();
+}
+function delCard(btn){
+  const card=btn.closest(".card"), kind=card.dataset.kind, q=s=>card.querySelector(s);
+  const label=((q("."+(kind==="watch"?"w":kind==="div"?"d":"s")+"-code")?.value||"")+" "+(q(".name-inp")?.value||"")).trim();
+  if(confirm("この行を削除しますか？\n"+(label||"(空の行)"))){
+    card.remove();
+    if(kind==="watch")calcWatch(); else if(kind==="div")calcDiv(); else calcSale(kind);
+    saveLocal();
+  }
+}
+function addCurrent(){
+  document.querySelector("main").scrollTop=0;
+  if(activeTab==="watch") addWatch({},true);
+  else if(activeTab==="trade"){ addSale("trade",{}); sortByDate("trade-list",".s-date"); }
+  else if(activeTab==="tradek"){ addSale("tradek",{}); sortByDate("tradek-list",".s-date"); }
+  else if(activeTab==="div"){ addDiv({}); sortByDate("div-list",".d-date"); }
+  saveLocal();
+}
+
+/* ===== 保存・読込 ===== */
+function gatherWatch(){ return [...document.querySelectorAll('#watch-list .card')].map(c=>{const q=s=>c.querySelector(s);
+  return {code:q(".w-code").value,name:q(".w-name").value,now:q(".w-now").value,target:q(".w-target").value,memo:q(".w-memo").value};}); }
+function gatherSale(tab){ return [...document.querySelectorAll('#'+tab+'-list .card')].map(c=>{const q=s=>c.querySelector(s);
+  return {side:"売",date:q(".s-date").value,code:q(".s-code").value,name:q(".s-name").value,qty:q(".s-qty").value,price:q(".s-price").value,acq:q(".s-acq").value,nisa:q(".acct").classList.contains("on")};}); }
+function gatherDiv(){ return [...document.querySelectorAll('#div-list .card')].map(c=>{const q=s=>c.querySelector(s);
+  return {date:q(".d-date").value,code:q(".d-code").value,name:q(".d-name").value,amt:q(".d-amt").value,memo:q(".d-memo").value};}); }
+function gather(){ return {watch:gatherWatch(),trade:gatherSale("trade"),tradek:gatherSale("tradek"),div:gatherDiv()}; }
+function saveLocal(showToast){ localStorage.setItem("kabuSpData",JSON.stringify(gather())); if(showToast===true)toast("💾 保存しました"); }
+let _sv; function scheduleSave(){ clearTimeout(_sv); _sv=setTimeout(()=>saveLocal(),700); }
+function getExtra(){ try{ return JSON.parse(localStorage.getItem("kabuSpExtra")||"{}"); }catch{ return {}; } }
+function setExtra(o){ localStorage.setItem("kabuSpExtra",JSON.stringify(o||{})); }
+function loadLocal(){ const raw=localStorage.getItem("kabuSpData"); if(!raw)return false; try{ applyData(JSON.parse(raw)); return true; }catch{ return false; } }
+function normalizeSaleRow(r){ if(Array.isArray(r)) return {side:r[1],date:r[0],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6],nisa:r[9]==="1"||r[9]===true};
+  return {side:r.side||"売",date:r.date,code:r.code,name:r.name,qty:r.qty,price:r.price,acq:r.acq,nisa:r.nisa===true||r.nisa==="1"}; }
+function normalizeWatchRow(r){ if(Array.isArray(r)) return {code:r[0],name:r[1],now:r[2],target:r[3],memo:r[5]};
+  return {code:r.code,name:r.name,now:r.now,target:r.target,memo:r.memo}; }
+function normalizeDivRow(r){ if(Array.isArray(r)) return {date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]};
+  return {date:r.date,code:r.code,name:r.name,amt:r.amt,memo:r.memo}; }
+function applyData(d){
+  ["watch-list","trade-list","tradek-list","div-list"].forEach(id=>document.getElementById(id).innerHTML="");
+  (d.watch||[]).forEach(r=>addWatch(normalizeWatchRow(r)));
+  (d.trade||[]).map(normalizeSaleRow).filter(r=>r.side==="売").forEach(r=>addSale("trade",r));
+  (d.tradek||[]).map(normalizeSaleRow).filter(r=>r.side==="売").forEach(r=>addSale("tradek",r));
+  (d.div||[]).forEach(r=>addDiv(normalizeDivRow(r)));
+  sortByDate("trade-list",".s-date"); sortByDate("tradek-list",".s-date"); sortByDate("div-list",".d-date");
+  calcWatch(); calcSale("trade"); calcSale("tradek"); calcDiv();
+}
+function exportJSON(){
+  const data={...getExtra(),...gather()};
+  const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); const a=document.createElement("a");
+  a.href=URL.createObjectURL(b); a.download="株式管理SP_"+new Date().toISOString().slice(0,10)+".json"; a.click(); toast("⬇ バックアップを書き出しました");
+}
+function importJSON(inp){
+  const f=inp.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=e=>{ try{ const d=JSON.parse(e.target.result);
+    const extra={}; Object.keys(d).forEach(k=>{ if(!["watch","trade","tradek","div"].includes(k))extra[k]=d[k]; }); setExtra(extra);
+    applyData(d); saveLocal(); closeMenu(); toast("⬆ 読み込みました");
+  }catch{ alert("ファイルを読めませんでした"); } };
+  r.readAsText(f); inp.value="";
+}
+
+/* ===== タブ ===== */
+function switchTab(t){
+  activeTab=t;
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("p-"+t).classList.add("active");
+  document.querySelectorAll(".bottomnav button").forEach(b=>b.classList.toggle("active",b.dataset.t===t));
+  document.querySelector("main").scrollTop=0;
+  document.getElementById("fab").style.display = (t==="basics")?"none":"flex";
+  document.getElementById("hdr-update").style.display = (t==="watch")?"flex":"none";
+  if(t==="watch")calcWatch(); else if(t==="div")calcDiv(); else if(t==="trade"||t==="tradek")calcSale(t);
+}
+
+/* ===== テーマ ===== */
+function applyTheme(t){ const dark=t==="dark";
+  document.documentElement.setAttribute("data-theme",dark?"dark":"light");
+  const b=document.getElementById("theme-btn"); if(b)b.textContent=dark?"☀️":"🌙";
+  const sw=document.getElementById("theme-sw"); if(sw)sw.checked=dark;
+  document.querySelector('meta[name=theme-color]').setAttribute("content",dark?"#10141b":"#ffffff");
+  localStorage.setItem("kabuSpTheme",dark?"dark":"light"); }
+function toggleTheme(){ applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"); }
+
+/* ===== 買い時通知 ===== */
+function setNotify(on){ const sw=document.getElementById("notify-sw");
+  if(on){ if(!("Notification" in window)){ alert("このブラウザは通知に対応していません。"); if(sw)sw.checked=false; return; }
+    Notification.requestPermission().then(p=>{ if(p==="granted"){ localStorage.setItem("kabuSpNotify","1"); notifyWatchHits(); }
+      else { alert("通知が許可されませんでした。"); localStorage.setItem("kabuSpNotify",""); if(sw)sw.checked=false; } });
+  } else localStorage.setItem("kabuSpNotify",""); }
+function initNotify(){ const on=localStorage.getItem("kabuSpNotify")==="1"&&("Notification" in window)&&Notification.permission==="granted";
+  const sw=document.getElementById("notify-sw"); if(sw)sw.checked=on; }
+function notifyWatchHits(){
+  if(localStorage.getItem("kabuSpNotify")!=="1")return; if(!("Notification" in window)||Notification.permission!=="granted")return;
+  const hits=[...document.querySelectorAll('#watch-list .card.hit')].map(c=>{const q=s=>c.querySelector(s);
+    return {key:(q(".w-code").value.trim()||q(".w-name").value.trim()),name:(q(".w-name").value.trim()||q(".w-code").value.trim()),now:q(".w-now").value,target:q(".w-target").value};}).filter(h=>h.key);
+  const keys=hits.map(h=>h.key); let prev=[]; try{ prev=JSON.parse(localStorage.getItem("kabuSpNotified")||"[]"); }catch{}
+  const fresh=hits.filter(h=>!prev.includes(h.key));
+  if(fresh.length){ try{ new Notification("🔔 買い時の銘柄があります",{body:fresh.map(h=>`${h.name}：現在 ¥${h.now}（目標 ¥${h.target}）`).join("\n"),tag:"kabusp-watch"}); }catch(e){} }
+  localStorage.setItem("kabuSpNotified",JSON.stringify(keys));
+}
+
+/* ===== メニュー・トースト ===== */
+function openMenu(){ document.getElementById("menu-ov").classList.add("show"); }
+function closeMenu(){ const ov=document.getElementById("menu-ov"); if(!ov.classList.contains("show")||ov.classList.contains("closing"))return;
+  ov.classList.add("closing"); setTimeout(()=>ov.classList.remove("show","closing"),220); }
+function toast(msg){ const d=document.createElement("div"); d.className="toast"; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),1800); }
+
+/* ===== 初期化 ===== */
+if(!loadLocal()){
+  addWatch({code:"6758",name:"ソニーグループ",now:"3200",target:"2800",memo:""});
+  addSale("trade",{code:"9432",name:"NTT",qty:"300",price:"165",acq:"150"});
+  addDiv({code:"7203",name:"トヨタ自動車",amt:"7600",memo:"中間配当"});
+}
+document.getElementById("theme-sw").checked=document.documentElement.getAttribute("data-theme")==="dark";
+document.getElementById("hdr-update").style.display="flex";
+initNotify(); showLastUpdated();
+calcWatch(); calcSale("trade"); calcSale("tradek"); calcDiv();
+</script>
+</body>
+</html>
