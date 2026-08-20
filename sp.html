@@ -306,14 +306,13 @@ function renderTot(boxId,label,total,byYear,tab,colored){
 
 /* ===== 現在値の自動取得 ===== */
 const PROXIES=[
-  u=>"https://api.codetabs.com/v1/proxy/?quest="+u,
-  u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
   u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
-  u=>"https://thingproxy.freeboard.io/fetch/"+u,
-  u=>"https://api.cors.lol/?url="+encodeURIComponent(u),
   u=>"https://proxy.cors.sh/"+u,
+  u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+  u=>"https://api.codetabs.com/v1/proxy/?quest="+u,
+  u=>"https://cors.eu.org/"+u,
 ];
-async function pfetch(url,ms=7000){ const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
+async function pfetch(url,ms=9000){ const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
   try{ return await fetch(url,{cache:"no-store",signal:ctl.signal}); } finally{ clearTimeout(t); } }
 async function fetchViaProxies(url,parse){
   const tries=PROXIES.map(p=>pfetch(p(url)).then(async r=>{ if(!r.ok)throw 0; const v=await parse(r); if(v==null||v==="")throw 0; return v; }));
@@ -537,10 +536,17 @@ function applyData(d){
   (d.div||[]).forEach(r=>addDiv(normalizeDivRow(r)));
   calcWatch(); calcSale("trade"); calcSale("tradek"); calcDiv();
 }
-function exportJSON(){
-  const data={...getExtra(),...gather()};
-  const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); const a=document.createElement("a");
-  a.href=URL.createObjectURL(b); a.download="株式管理SP_"+new Date().toISOString().slice(0,10)+".json"; a.click(); toast("⬇ バックアップを書き出しました");
+async function exportJSON(){
+  const json=JSON.stringify({...getExtra(),...gather()},null,2);
+  const fname="株式管理SP_"+new Date().toISOString().slice(0,10)+".json";
+  // スマホ(iOS等): 共有シートでファイルアプリ等に保存
+  try{
+    const file=new File([json],fname,{type:"application/json"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:fname}); return; }
+  }catch(e){ if(e&&e.name==="AbortError") return; }
+  // PC/対応外: ダウンロード
+  const b=new Blob([json],{type:"application/json"}); const a=document.createElement("a");
+  a.href=URL.createObjectURL(b); a.download=fname; a.click(); toast("⬇ バックアップを書き出しました");
 }
 function importJSON(inp){
   const f=inp.files[0]; if(!f)return; const r=new FileReader();

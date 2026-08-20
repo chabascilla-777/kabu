@@ -1392,20 +1392,36 @@ function loadLocal(){
   const raw=localStorage.getItem("kabuData");if(!raw)return false;
   apply(JSON.parse(raw));return true;
 }
+/* スマホ版(sp.html)のバックアップは行がオブジェクト形式。PC版の配列形式と両対応にする */
+function nisaOn(v){ return v===true||v==="1"||v==="NISA"; }
+function nrmHold(r){
+  if(!Array.isArray(r)) return {code:r.code,name:r.name,date:r.date,qty:r.qty,buy:r.buy,now:r.now,nisa:nisaOn(r.nisa)};
+  if(r.length<6) r=[r[0],r[1],"",r[2],r[3],r[4]];                 // 旧フォーマット(買付日なし=5列)
+  // 過去の列数に対応: NISAは 旧16列→r[14] / 旧14列→r[12] / 現12列→r[10]
+  return {code:r[0],name:r[1],date:r[2],qty:r[3],buy:r[4],now:r[5],nisa:nisaOn(r.length>=15?r[14]:r.length>=13?r[12]:r[10])};
+}
+function nrmKin(r){ return Array.isArray(r)
+  ? {code:r[0],name:r[1],date:r[2],invest:r[3],buy:r[4],now:r[5],nisa:nisaOn(r[10])}
+  : {code:r.code,name:r.name,date:r.date,invest:r.invest,buy:r.buy,now:r.now,nisa:nisaOn(r.nisa)}; }
+function nrmDiv(r){ return Array.isArray(r)
+  ? {date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]}
+  : {date:r.date,code:r.code,name:r.name,amt:r.amt,memo:r.memo}; }
+function nrmTrade(r){ return Array.isArray(r)
+  ? {date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6],nisa:nisaOn(r[9])}
+  : {date:r.date,side:r.side||"売",code:r.code,name:r.name,qty:r.qty,price:r.price,acq:r.acq,nisa:nisaOn(r.nisa)}; }
+function nrmWatch(r){ return Array.isArray(r)
+  ? {code:r[0],name:r[1],now:r[2],target:r[3],memo:r[5]}
+  : {code:r.code,name:r.name,now:r.now,target:r.target,memo:r.memo}; }
 function apply(d){
-  document.querySelectorAll("#t-hold tbody tr,#t-kin tbody tr,#t-div tbody tr,#t-trade tbody tr,#t-tradek tbody tr,#t-watch tbody tr").forEach(x=>x.remove());
-  (d.hold||[]).forEach(r=>{
-    // 旧フォーマット(買付日なし=5列)との互換
-    if(r.length<6) r=[r[0],r[1],"",r[2],r[3],r[4]];
-    // 過去の列数に対応: NISAは 旧16列→r[14] / 旧14列→r[12] / 現12列→r[10]
-    const hn=(r.length>=15?r[14]:r.length>=13?r[12]:r[10])==="1";
-    addHold({code:r[0],name:r[1],date:r[2],qty:r[3],buy:r[4],now:r[5],nisa:hn});
-  });
-  (d.kin||[]).forEach(r=>addKin({code:r[0],name:r[1],date:r[2],invest:r[3],buy:r[4],now:r[5],nisa:r[10]==="1"}));
-  (d.div||[]).forEach(r=>addDiv({date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]}));
-  (d.trade||[]).forEach(r=>addTrade({date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6],nisa:r[9]==="1"}));
-  (d.tradek||[]).forEach(r=>addTradeK({date:r[0],side:r[1],code:r[2],name:r[3],qty:r[4],price:r[5],acq:r[6],nisa:r[9]==="1"}));
-  (d.watch||[]).forEach(r=>addWatch({code:r[0],name:r[1],now:r[2],target:r[3],memo:r[5]}));
+  // バックアップに含まれる表だけ入れ替える(スマホ版バックアップで保有株・キンカブを消さないため)
+  const tables={hold:"#t-hold tbody tr",kin:"#t-kin tbody tr",div:"#t-div tbody tr",trade:"#t-trade tbody tr",tradek:"#t-tradek tbody tr",watch:"#t-watch tbody tr"};
+  Object.keys(tables).forEach(k=>{ if(Array.isArray(d[k])) document.querySelectorAll(tables[k]).forEach(x=>x.remove()); });
+  (d.hold||[]).forEach(r=>addHold(nrmHold(r)));
+  (d.kin||[]).forEach(r=>addKin(nrmKin(r)));
+  (d.div||[]).forEach(r=>addDiv(nrmDiv(r)));
+  (d.trade||[]).forEach(r=>addTrade(nrmTrade(r)));
+  (d.tradek||[]).forEach(r=>addTradeK(nrmTrade(r)));
+  (d.watch||[]).forEach(r=>addWatch(nrmWatch(r)));
   formatAllMoney(); formatAllDates(); // 読込データを整形
   applyAllFilters();
 }
