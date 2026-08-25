@@ -39,7 +39,7 @@
     padding:calc(env(safe-area-inset-top,0px) + 11px) 15px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:30;}
   .brand{display:flex;align-items:center;gap:9px;}
   .logo{width:30px;height:30px;border-radius:9px;object-fit:cover;display:block;flex-shrink:0;}
-  .brand .t{font-size:14.5px;font-weight:800;letter-spacing:-.01em;}
+  .brand .t{font-size:15px;font-weight:800;letter-spacing:-.01em;}
   .brand .t span{font-size:9.5px;font-weight:600;color:var(--sub);margin-left:5px;}
   .acts{display:flex;gap:8px;}
   .icobtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:transparent;
@@ -53,21 +53,22 @@
   /* 上部固定エリア(サブタブ＋合計＋見出し) */
   .sticky{position:sticky;top:0;z-index:6;background:var(--card);}
   /* サブタブ(株／キンカブ) */
-  .segs{display:flex;gap:6px;padding:10px 12px 2px;}
+  .segs{display:flex;gap:6px;padding:10px 12px 4px;}
   .seg{flex:1;min-height:36px;border:1px solid var(--line);background:transparent;color:var(--sub);
     border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;}
   .seg.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
   /* 合計バー */
-  .totbar{background:var(--card);border-bottom:1px solid var(--line);padding:12px 14px;}
-  .totbar .lbl{font-size:10.5px;color:var(--sub);letter-spacing:.06em;font-weight:700;}
-  .totbar .big{font-size:31px;font-weight:800;display:block;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .totbar{background:var(--card);padding:12px 12px 10px;}
+  .totbar .lbl{font-size:11px;color:var(--sub);letter-spacing:.05em;font-weight:700;}
+  .totbar .big{font-size:30px;font-weight:800;display:block;margin-top:1px;letter-spacing:-.02em;
+    line-height:1.15;font-variant-numeric:tabular-nums;}
   /* 年・月チップ: 増えたら左右スクロール */
   .totbar .years{display:flex;flex-wrap:nowrap;gap:6px;margin-top:9px;overflow-x:auto;overflow-y:hidden;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px;}
   .totbar .years::-webkit-scrollbar{display:none;}
   .totbar .years .yr{flex:0 0 auto;white-space:nowrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;
-    padding:5px 10px;font-size:11px;font-variant-numeric:tabular-nums;cursor:pointer;color:var(--ink);
-    font-family:inherit;display:inline-flex;align-items:center;gap:5px;min-height:28px;}
+    padding:5px 11px;font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;
+    color:var(--ink);font-family:inherit;display:inline-flex;align-items:center;gap:6px;min-height:29px;}
   .totbar .years .yr b{color:var(--sub);font-weight:600;}
   .totbar .years .yr.active{background:var(--accent);border-color:var(--accent);}
   .totbar .years .yr.active,.totbar .years .yr.active b,.totbar .years .yr.active span{color:var(--accent-ink)!important;}
@@ -82,43 +83,40 @@
   @keyframes ptrspin{to{transform:rotate(360deg);}}
   /* ===== 一覧の見出し行 ===== */
   .lhead{display:flex;align-items:center;gap:4px;background:var(--card);border-bottom:1px solid var(--line);
-    padding:8px 10px;font-size:10.5px;color:var(--sub);font-weight:700;letter-spacing:.04em;}
+    padding:2px 12px 8px;font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.03em;}
   .lhead span,.lhead button{min-width:0;}
   .toolbar{display:flex;justify-content:flex-end;padding:8px 12px 6px;background:var(--card);}
+  .sticky > .totbar + .toolbar{border-top:1px solid var(--line);}
+  .sticky > .totbar + .lhead{border-top:1px solid var(--line);padding-top:9px;}
   .sortbtn{border:1px solid var(--line);background:transparent;color:var(--accent-2);font-family:inherit;
     font-size:11px;font-weight:800;padding:5px 13px;min-height:30px;border-radius:9px;cursor:pointer;white-space:nowrap;}
   .sortbtn:active{background:var(--accent-soft);}
   /* ===== 行(スワイプで削除) ===== */
   .srow{position:relative;padding:0;border-bottom:1px solid var(--line);overflow:hidden;}
-  .srow.big{border-bottom:10px solid var(--sep);}
   .srow:last-child{border-bottom:none;}
   .srow .swdel{position:absolute;top:0;right:0;width:72px;height:100%;border:none;padding:0;
     background:var(--plus);display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .srow .swdel svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-  .swin{position:relative;background:var(--card);padding:8px 10px;
+  .swin{position:relative;background:var(--card);padding:10px 12px;
     transition:transform .22s cubic-bezier(.2,.8,.3,1);will-change:transform;}
-  .swin.wpad{padding:14px 15px 16px;}
   .srow.open .swin{transform:translateX(-72px);}
   .srow.drag .swin{transition:none;}
   .srow.added{animation:cardIn .55s ease;}
   @keyframes cardIn{0%{opacity:0;transform:translateY(-14px);}100%{opacity:1;transform:none;}}
   /* 行の1段目(日付・右端の値) */
-  .rtop{display:flex;align-items:center;gap:6px;margin-bottom:2px;min-height:26px;}
-  .rtop-r{margin-left:auto;min-width:0;display:flex;align-items:center;gap:8px;}
-  .qtytop{flex:0 0 62px;width:62px;text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;
-    border:1px solid transparent;background:transparent;border-radius:7px;padding:3px 4px;min-height:26px;
-    color:var(--ink);font-family:inherit;-webkit-appearance:none;appearance:none;}
-  .qtytop:focus{outline:none;background:var(--field);border-color:var(--accent);}
-  .qtytop::placeholder{color:var(--sub);opacity:.6;font-weight:600;}
-  .unit{font-size:11px;color:var(--sub);font-weight:700;margin-left:-2px;}
-  .dtin{border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:700;font-family:inherit;
-    padding:0 2px;width:auto;min-height:auto;font-variant-numeric:tabular-nums;}
+  .rtop{display:flex;align-items:center;gap:6px;min-height:22px;}
+  .unit{font-size:11px;color:var(--sub);font-weight:700;margin-left:1px;}
+  /* 日付欄: カレンダーの絵柄を出さず、欄全体タップでピッカーを開く */
+  .dtin::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;
+    opacity:0;cursor:pointer;}
+  .dtin{position:relative;border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:700;
+    font-family:inherit;padding:0 2px;width:96px;flex:0 0 96px;min-height:auto;font-variant-numeric:tabular-nums;}
   .rtop-r{display:flex;align-items:center;gap:8px;}
   .rtop .s-pl{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--sub);
     min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pos{color:var(--plus);} .neg{color:var(--minus);}
   /* 行の入力段(枠なし・横一列) */
-  .rowf{display:flex;align-items:center;gap:4px;}
+  .rowf{display:flex;align-items:center;gap:4px;margin-top:2px;}
   .rowf input{font-size:16px;padding:7px 4px;min-height:40px;width:100%;border-radius:8px;
     background:transparent;border:1px solid transparent;box-shadow:none;color:var(--ink);font-weight:500;
     font-family:inherit;transition:.12s;-webkit-appearance:none;appearance:none;}
@@ -133,59 +131,76 @@
   /* 入力欄側の見た目(.rowf input より強い指定にする) */
   .rowf input.f-code{width:46px;text-align:center;font-size:13px;font-weight:700;color:var(--sub);
     padding:6px 1px;font-variant-numeric:tabular-nums;}
-  .rowf input.f-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rowf input.f-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .rowf .money{position:relative;}
-  .rowf .money .yc{position:absolute;left:4px;top:50%;transform:translateY(-50%);color:var(--sub);
-    font-size:12px;font-weight:600;pointer-events:none;z-index:1;}
-  .rowf .money input{padding-left:16px;padding-right:4px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;
+  .rowf .money input{padding-left:4px;padding-right:4px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .qtytop{text-overflow:ellipsis;overflow:hidden;}
-  .rowf .f-money input{padding-left:20px;padding-right:6px;min-height:46px;}
+  .rowf .f-money input{padding-left:6px;padding-right:6px;min-height:42px;font-size:17px;}
   .rowf input.pos{color:var(--plus);}
   .rowf input.neg{color:var(--minus);}
+  /* ===== 売却株の行(銘柄／日付・株数／取得→約定・損益) ===== */
+  .tline{display:flex;align-items:center;gap:6px;}
+  .tline input{border:1px solid transparent;background:transparent;border-radius:8px;color:var(--ink);
+    font-family:inherit;padding:5px 4px;min-height:34px;-webkit-appearance:none;appearance:none;transition:.12s;}
+  .tline input:focus{outline:none;background:var(--field);border-color:var(--accent);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
+  .tline .tcode{flex:0 0 46px;width:46px;text-align:center;font-size:13px;font-weight:700;color:var(--sub);
+    font-variant-numeric:tabular-nums;padding:5px 1px;}
+  .tline .tname{flex:1;min-width:0;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tline .w-status{flex:0 0 auto;margin-left:auto;font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap;}
+  .mline{display:flex;align-items:center;gap:2px;}
+  .mline .dot{color:var(--sub);font-weight:700;margin:0 3px;font-size:12px;}
+  .mline .qtyin{width:48px;text-align:right;font-size:12px;font-weight:700;color:var(--sub);
+    font-variant-numeric:tabular-nums;border:1px solid transparent;background:transparent;border-radius:7px;
+    padding:2px 3px;min-height:24px;font-family:inherit;-webkit-appearance:none;appearance:none;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.12s;}
+  .mline .qtyin:focus{outline:none;background:var(--field);border-color:var(--accent);color:var(--ink);}
+  .mline .qtyin::placeholder{color:var(--sub);opacity:.6;}
+  .bline{display:flex;align-items:center;gap:4px;margin-top:2px;}
+  .bline .mnum{flex:0 0 104px;position:relative;}
+  .bline .wnum{flex:0 0 84px;position:relative;}
+  .bline input{width:100%;padding:7px 4px 7px 6px;min-height:40px;text-align:right;font-size:16px;font-weight:700;
+    font-variant-numeric:tabular-nums;border:1px solid transparent;background:transparent;border-radius:8px;
+    color:var(--ink);font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    -webkit-appearance:none;appearance:none;transition:.12s;}
+  .bline input:focus{outline:none;background:var(--field);border-color:var(--accent);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
+  .bline input::placeholder{color:var(--sub);opacity:.5;}
+  .bline .arw{flex:0 0 auto;color:var(--sub);font-size:14px;font-weight:700;padding:0 2px;}
+  .bline .mlab{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--sub);}
+  .bline .wnum input{text-align:left;padding-left:4px;}
+  .memo-inp{width:100%;margin-top:6px;background:var(--memo-bg);border:1px solid transparent;border-radius:8px;
+    font-size:12px;font-weight:400;color:var(--ink);font-family:inherit;padding:8px 10px;min-height:36px;
+    -webkit-appearance:none;appearance:none;transition:.12s;}
+  .memo-inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
+  .memo-inp::placeholder{color:var(--sub);opacity:.6;}
+  .bline .s-pl{flex:1;min-width:0;text-align:right;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;
+    color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2px;}
+  .bline .s-pl.pos{color:var(--plus);}
+  .bline .s-pl.neg{color:var(--minus);}
   /* NISA切替 */
   .acct{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:30px;height:26px;padding:0;
-    border:1px solid var(--field-line);border-radius:7px;background:var(--card);color:var(--sub);
+    border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--sub);
     font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;transition:.12s;}
   .acct.on{background:var(--good);border-color:var(--good);color:#fff;}
   /* 空表示 */
-  .aempty{padding:34px 24px;text-align:center;color:var(--sub);font-size:12.5px;line-height:1.9;}
-  /* ===== 買い予定カード ===== */
-  .chead{display:flex;align-items:stretch;gap:8px;margin-bottom:12px;}
-  .ident{flex:1;min-width:0;display:flex;align-items:stretch;border:1px solid var(--field-line);border-radius:9px;overflow:hidden;transition:.12s;}
-  .ident:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
-  .ident input{border:none!important;border-radius:0;background:transparent;box-shadow:none!important;}
-  .wcard input{font-size:16px;padding:10px 12px;border:1px solid var(--field-line);border-radius:8px;
-    background:var(--field);color:var(--ink);width:100%;min-height:42px;transition:.12s;font-weight:500;font-family:inherit;}
-  .wcard input::placeholder{color:var(--sub);opacity:.7;}
-  .wcard input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
-  .wcard input.code-sub{flex:0 0 76px;width:76px;text-align:center;font-size:14px;font-weight:600;color:var(--sub);padding:6px 8px;}
-  .wcard input.name-inp{flex:1;min-width:0;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .w-now,.w-target{font-variant-numeric:tabular-nums;}
-  .wcard input.memo-inp{font-weight:400;font-size:12px;background:var(--memo-bg);}
-  .wcard .money{position:relative;}
-  .wcard .money .yc{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:14px;font-weight:600;pointer-events:none;}
-  .wcard .money input{padding-left:24px;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-  .fld{display:flex;flex-direction:column;gap:6px;min-width:0;}
-  .fld > label{font-size:11px;color:var(--sub);font-weight:600;}
-  .memo-wrap .status{display:flex;justify-content:flex-end;align-items:center;margin-top:8px;}
+  .aempty{padding:38px 26px;text-align:center;color:var(--sub);font-size:12px;line-height:2;}
+  /* ===== 買い予定 ===== */
   .badge-buy{display:inline-flex;align-items:center;gap:5px;background:var(--plus);color:#fff;
     font-weight:800;font-size:11px;padding:4px 10px;border-radius:7px;}
   .badge-buy::before{content:"";width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.4s ease-in-out infinite;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .status .far{color:var(--sub);font-size:11px;font-weight:600;}
-  .memo-wrap:has(.w-status:empty) .status{display:none;}
   /* コピーボタン */
   .copy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:34px;height:40px;padding:0;
-    border:1px solid var(--field-line);border-radius:9px;background:var(--card);color:var(--accent-2);cursor:pointer;transition:.12s;}
+    border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--accent-2);cursor:pointer;transition:.12s;}
   .copy svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .copy:active{background:var(--bg);}
   .copy.done{background:var(--good);border-color:var(--good);color:#fff;}
   /* 収支の＋／−切替 */
-  .k-sign{width:38px;height:26px;font-size:13px;}
-  .k-sign.m{color:var(--minus);border-color:var(--minus);}
-  .k-sign.p{color:var(--plus);border-color:var(--plus);}
+  .k-sign{width:34px;height:24px;font-size:12px;}
+  .k-sign.m{color:var(--minus);}
+  .k-sign.p{color:var(--plus);}
   /* ===== 追加ボタン(黄緑) ===== */
   .icobtn.addbtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
   .icobtn.addbtn:active{filter:brightness(.95);}
@@ -222,8 +237,8 @@
     color:var(--accent-ink);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
   /* ===== 下部タブ ===== */
   .bottomnav{flex-shrink:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--safe-b);z-index:30;}
-  .bottomnav button{flex:1;background:none;border:none;color:var(--sub);font-size:9.5px;font-weight:600;
-    padding:7px 0 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;font-family:inherit;}
+  .bottomnav button{flex:1;background:none;border:none;color:var(--sub);font-size:10px;font-weight:600;
+    padding:8px 0 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;font-family:inherit;}
   .bottomnav button.active{color:var(--accent-2);}
   .bottomnav .ic{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
   .bottomnav .ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
@@ -297,12 +312,6 @@
       <div class="totbar" id="tot-trade"></div>
       <div class="totbar" id="tot-tradek" style="display:none"></div>
       <div class="toolbar"><button class="sortbtn" onclick="sortActive()">⇅ コード順</button></div>
-      <div class="lhead">
-        <span class="f-code" style="text-align:center">コード</span>
-        <span class="f-name">銘柄</span>
-        <span class="f-num" style="text-align:right;padding-right:5px">取得単価</span>
-        <span class="f-num" style="text-align:right;padding-right:5px">約定単価</span>
-      </div>
     </div>
     <div id="trade-list"></div>
     <div id="tradek-list" style="display:none"></div>
@@ -400,9 +409,9 @@
 
 <nav class="bottomnav">
   <button data-t="watch" class="active" onclick="switchTab('watch')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>買い予定<span class="nbadge" id="nbadge"></span></button>
+  <button data-t="avg" onclick="switchTab('avg')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9V4h9l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7.6" cy="7.6" r="1.4"/></svg></span>取得単価</button>
   <button data-t="trade" onclick="switchTab('trade')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 5v13"/></svg></span>売却株</button>
   <button data-t="div" onclick="switchTab('div')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.4"/><path d="M6 12h.01M18 12h.01"/></svg></span>配当</button>
-  <button data-t="avg" onclick="switchTab('avg')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9V4h9l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7.6" cy="7.6" r="1.4"/></svg></span>取得単価</button>
   <button data-t="basics" onclick="switchTab('basics')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 6C10 4.5 6.5 4.5 4 5v14c2.5-.5 6 0 8 1.5 2-1.5 5.5-2 8-1.5V5c-2.5-.5-6-.5-8 1z"/><path d="M12 6v14.5"/></svg></span>基本</button>
   <button data-t="slot" onclick="switchTab('slot')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9v6M12 9v6M16 9v6"/></svg></span>スロ収支</button>
 </nav>
@@ -443,9 +452,10 @@ function fmtMoney(inp){
   const neg=v.indexOf("-")===0; v=v.replace(/-/g,"");
   let p=v.split("."), int=p[0]||"", dec=p[1];
   int=int.replace(/^0+(?=\d)/,"").replace(/\B(?=(\d{3})+(?!\d))/g,",");
-  inp.value=(neg?"-":"")+(int||"0")+((dec!==undefined&&dec!=="")?"."+dec:"");
+  inp.value=(neg?"-":"")+"¥"+(int||"0")+((dec!==undefined&&dec!=="")?"."+dec:"");
 }
-function stripMoney(inp){ inp.value=inp.value.replace(/,/g,""); }
+function stripMoney(inp){ inp.value=inp.value.replace(/[,¥￥]/g,""); }
+const mv = v => String(v==null?"":v).replace(/[¥￥]/g,"");   // 保存時は¥を外す
 document.addEventListener("focusin",e=>{ if(e.target.matches&&e.target.matches(".money input")) stripMoney(e.target); });
 document.addEventListener("focusout",e=>{ if(e.target.matches&&e.target.matches(".money input")) fmtMoney(e.target); });
 
@@ -512,11 +522,11 @@ async function runPool(items,worker,c=4){ let i=0; await Promise.all(Array.from(
 
 /* ===== 行の土台(左スライドでゴミ箱) ===== */
 const DEL_SVG='<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg>';
-function mkRow(kind,inner,big){
+function mkRow(kind,inner){
   const row=document.createElement("div");
-  row.className="card srow"+(big?" big":""); row.dataset.kind=kind;
+  row.className="card srow"; row.dataset.kind=kind;
   row.innerHTML='<button class="swdel" onclick="delCard(this)" aria-label="削除">'+DEL_SVG+'</button>'+
-    '<div class="swin'+(big?" wpad wcard":"")+'">'+inner+'</div>';
+    '<div class="swin">'+inner+'</div>';
   return row;
 }
 function putRow(box,row,atTop){
@@ -528,17 +538,19 @@ function putRow(box,row,atTop){
 /* ===== 買い予定 ===== */
 function addWatch(d={},atTop){
   const row=mkRow("watch",`
-    <div class="chead">
-      <div class="ident">
-        <input class="w-code code-sub" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
-        <input class="w-name name-inp" placeholder="銘柄名" autocomplete="off">
-      </div>
+    <div class="tline">
+      <input class="w-code tcode" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
+      <input class="w-name tname name-inp" placeholder="銘柄名" autocomplete="off">
+      <span class="w-status far"></span>
     </div>
-    <div class="grid2">
-      <div class="fld"><label>現在値</label><div class="money"><span class="yc">¥</span><input class="w-now" type="text" inputmode="decimal"></div></div>
-      <div class="fld"><label>買いたい価格</label><div class="money"><span class="yc">¥</span><input class="w-target" type="text" inputmode="decimal"></div></div>
+    <div class="bline">
+      <span class="mlab">現在</span>
+      <div class="money wnum"><input class="w-now" type="text" inputmode="decimal" placeholder="¥0"></div>
+      <span class="arw">→</span>
+      <span class="mlab">目標</span>
+      <div class="money wnum"><input class="w-target" type="text" inputmode="decimal" placeholder="¥0"></div>
     </div>
-    <div class="memo-wrap"><input class="w-memo memo-inp" placeholder="メモを入力する" autocomplete="off"><div class="status"><span class="w-status far">-</span></div></div>`,true);
+    <input class="w-memo memo-inp" placeholder="メモを入力する" autocomplete="off">`);
   putRow(document.getElementById("watch-list"),row,atTop);
   const q=s=>row.querySelector(s);
   q(".w-code").value=d.code||""; q(".w-name").value=d.name||""; q(".w-now").value=d.now||"";
@@ -583,16 +595,21 @@ function showLastUpdated(){ const st=localStorage.getItem("kabuSpUpdated"); if(s
 /* ===== 売却株(株／キンカブ) ===== */
 function addSale(tab,d={},atTop){
   const row=mkRow(tab,`
-    <div class="rtop">
-      <input class="s-date dtin" type="date">
-      <input class="s-qty qtytop" type="text" inputmode="decimal" placeholder="株数"><span class="unit">株</span>
-      <span class="rtop-r"><b class="s-pl">-</b><button type="button" class="acct" onclick="toggleAcct(this)">特</button></span>
+    <div class="tline">
+      <input class="s-code tcode" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
+      <input class="s-name tname name-inp" placeholder="銘柄名" autocomplete="off">
+      <button type="button" class="acct" onclick="toggleAcct(this)">特</button>
     </div>
-    <div class="rowf">
-      <input class="s-code f-code" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
-      <input class="s-name f-name name-inp" placeholder="銘柄名" autocomplete="off">
-      <div class="money f-num"><span class="yc">¥</span><input class="s-acq" type="text" inputmode="decimal" placeholder="取得"></div>
-      <div class="money f-num"><span class="yc">¥</span><input class="s-price" type="text" inputmode="decimal" placeholder="約定"></div>
+    <div class="mline">
+      <input class="s-date dtin" type="date">
+      <span class="dot">·</span>
+      <input class="s-qty qtyin" type="text" inputmode="decimal" placeholder="株数"><span class="unit">株</span>
+    </div>
+    <div class="bline">
+      <div class="money mnum"><input class="s-acq" type="text" inputmode="decimal" placeholder="取得"></div>
+      <span class="arw">→</span>
+      <div class="money mnum"><input class="s-price" type="text" inputmode="decimal" placeholder="約定"></div>
+      <b class="s-pl">-</b>
     </div>`);
   putRow(document.getElementById(tab+"-list"),row,atTop);
   const q=s=>row.querySelector(s);
@@ -629,7 +646,7 @@ function addDiv(d={},atTop){
     <div class="rowf">
       <input class="d-code f-code" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
       <input class="d-name f-name name-inp" placeholder="銘柄名" autocomplete="off">
-      <div class="money f-money"><span class="yc">¥</span><input class="d-amt" type="text" inputmode="decimal" placeholder="0"></div>
+      <div class="money f-money"><input class="d-amt" type="text" inputmode="decimal" placeholder="0"></div>
     </div>`);
   putRow(document.getElementById("div-list"),row,atTop);
   const q=s=>row.querySelector(s);
@@ -662,7 +679,7 @@ function addAvg(list,d={},atTop){
     <div class="rowf">
       <input class="a-code f-code" placeholder="コード" inputmode="text" autocapitalize="characters" autocomplete="off">
       <input class="a-name f-name name-inp" placeholder="銘柄名" autocomplete="off">
-      <div class="money f-money"><span class="yc">¥</span><input class="a-acq" type="text" inputmode="decimal" placeholder="0"></div>
+      <div class="money f-money"><input class="a-acq" type="text" inputmode="decimal" placeholder="0"></div>
       <button type="button" class="copy" onclick="copyAcq(this)" title="取得単価をコピー" aria-label="取得単価をコピー">${COPY_SVG}</button>
     </div>`);
   putRow(document.getElementById(list+"-list"),row,atTop);
@@ -690,7 +707,7 @@ function legacyCopy(v){
 }
 async function copyAcq(btn){
   const row=btn.closest(".srow"), inp=row.querySelector(".a-acq");
-  const v=(inp.value||"").replace(/,/g,"").trim();
+  const v=(inp.value||"").replace(/[,¥￥]/g,"").trim();
   if(!v){ toast("取得単価が未入力です"); return; }
   let ok=false;
   try{ if(navigator.clipboard&&window.isSecureContext){ await navigator.clipboard.writeText(v); ok=true; } }catch(e){}
@@ -708,7 +725,7 @@ function addSlot(d={},atTop){
     </div>
     <div class="rowf">
       <input class="k-place f-name" placeholder="店名・機種" autocomplete="off">
-      <div class="money f-money"><span class="yc">¥</span><input class="k-amt" type="text" inputmode="decimal" placeholder="0"></div>
+      <div class="money f-money"><input class="k-amt" type="text" inputmode="decimal" placeholder="0"></div>
     </div>`);
   putRow(document.getElementById("slot-list"),row,atTop);
   const q=s=>row.querySelector(s);
@@ -739,7 +756,7 @@ function calcSlot(){
 // 収支の符号を切り替える(スマホの数字キーボードに「−」が無いため)
 function toggleSign(btn){
   const inp=btn.closest(".srow").querySelector(".k-amt");
-  const v=(inp.value||"").replace(/,/g,"").trim();
+  const v=(inp.value||"").replace(/[,¥￥]/g,"").trim();
   if(v===""||v==="-"){ inp.value=(v==="-")?"":"-"; }
   else { inp.value=v.startsWith("-")?v.slice(1):"-"+v; fmtMoney(inp); }
   calcSlot(); saveLocal();
@@ -814,15 +831,15 @@ function sortList(id,pre){
 
 /* ===== 保存・読込 ===== */
 function gatherWatch(){ return [...document.querySelectorAll('#watch-list .srow')].map(c=>{const q=s=>c.querySelector(s);
-  return {code:q(".w-code").value,name:q(".w-name").value,now:q(".w-now").value,target:q(".w-target").value,memo:q(".w-memo").value};}); }
+  return {code:q(".w-code").value,name:q(".w-name").value,now:mv(q(".w-now").value),target:mv(q(".w-target").value),memo:q(".w-memo").value};}); }
 function gatherSale(tab){ return [...document.querySelectorAll('#'+tab+'-list .srow')].map(c=>{const q=s=>c.querySelector(s);
-  return {side:"売",date:q(".s-date").value,code:q(".s-code").value,name:q(".s-name").value,qty:q(".s-qty").value,price:q(".s-price").value,acq:q(".s-acq").value,nisa:q(".acct").classList.contains("on")};}); }
+  return {side:"売",date:q(".s-date").value,code:q(".s-code").value,name:q(".s-name").value,qty:q(".s-qty").value,price:mv(q(".s-price").value),acq:mv(q(".s-acq").value),nisa:q(".acct").classList.contains("on")};}); }
 function gatherDiv(){ return [...document.querySelectorAll('#div-list .srow')].map(c=>{const q=s=>c.querySelector(s);
-  return {date:q(".d-date").value,code:q(".d-code").value,name:q(".d-name").value,amt:q(".d-amt").value,memo:c.dataset.memo||""};}); }
+  return {date:q(".d-date").value,code:q(".d-code").value,name:q(".d-name").value,amt:mv(q(".d-amt").value),memo:c.dataset.memo||""};}); }
 function gatherAvg(list){ return [...document.querySelectorAll('#'+list+'-list .srow')].map(c=>{const q=s=>c.querySelector(s);
-  return {code:q(".a-code").value,name:q(".a-name").value,acq:q(".a-acq").value};}); }
+  return {code:q(".a-code").value,name:q(".a-name").value,acq:mv(q(".a-acq").value)};}); }
 function gatherSlot(){ return [...document.querySelectorAll('#slot-list .srow')].map(c=>{const q=s=>c.querySelector(s);
-  return {date:q(".k-date").value,place:q(".k-place").value,amt:q(".k-amt").value};}); }
+  return {date:q(".k-date").value,place:q(".k-place").value,amt:mv(q(".k-amt").value)};}); }
 function gather(){ return {watch:gatherWatch(),trade:gatherSale("trade"),tradek:gatherSale("tradek"),
   avg:gatherAvg("avg"),avgk:gatherAvg("avgk"),div:gatherDiv(),slot:gatherSlot()}; }
 function saveLocal(showToast){ localStorage.setItem("kabuSpData",JSON.stringify(gather())); if(showToast===true)toast("💾 保存しました"); }
