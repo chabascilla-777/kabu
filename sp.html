@@ -94,13 +94,16 @@
   /* ===== 行(スワイプで削除) ===== */
   .srow{position:relative;padding:0;border-bottom:1px solid var(--line);overflow:hidden;}
   .srow:last-child{border-bottom:none;}
+  /* ゴミ箱は普段は描画しない(スクロール中にちらつくため)。スワイプ中だけ出す */
   .srow .swdel{position:absolute;top:0;right:0;width:72px;height:100%;border:none;padding:0;
-    background:var(--plus);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    background:var(--plus);display:flex;align-items:center;justify-content:center;cursor:pointer;
+    opacity:0;pointer-events:none;transition:opacity .12s linear;}
+  .srow.drag .swdel,.srow.open .swdel{opacity:1;pointer-events:auto;}
   .srow .swdel svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .swin{position:relative;background:var(--card);padding:10px 12px;
-    transition:transform .22s cubic-bezier(.2,.8,.3,1);will-change:transform;}
+    transition:transform .22s cubic-bezier(.2,.8,.3,1);}
   .srow.open .swin{transform:translateX(-72px);}
-  .srow.drag .swin{transition:none;}
+  .srow.drag .swin{transition:none;will-change:transform;}
   .srow.added{animation:cardIn .55s ease;}
   @keyframes cardIn{0%{opacity:0;transform:translateY(-14px);}100%{opacity:1;transform:none;}}
   /* 行の1段目(日付・右端の値) */
@@ -175,10 +178,15 @@
     -webkit-appearance:none;appearance:none;transition:.12s;}
   .memo-inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);}
   .memo-inp::placeholder{color:var(--sub);opacity:.6;}
-  .bline .s-pl{flex:1;min-width:0;text-align:right;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;
-    color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2px;}
-  .bline .s-pl.pos{color:var(--plus);}
-  .bline .s-pl.neg{color:var(--minus);}
+  .bline .s-pl{flex:1;min-width:0;text-align:right;font-size:17px;font-weight:800;
+    font-variant-numeric:tabular-nums;color:var(--sub);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;padding-right:2px;}
+  .rtop .k-pl{margin-left:auto;padding-right:2px;font-size:17px;font-weight:800;
+    font-variant-numeric:tabular-nums;color:var(--sub);white-space:nowrap;}
+  .bline .knum{flex:0 0 118px;position:relative;}
+  .bline .knum input{text-align:left;padding-left:4px;}
+  .s-pl.pos,.k-pl.pos{color:var(--plus);}
+  .s-pl.neg,.k-pl.neg{color:var(--minus);}
   /* NISA切替 */
   .acct{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:30px;height:26px;padding:0;
     border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--sub);
@@ -197,10 +205,6 @@
   .copy svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .copy:active{background:var(--bg);}
   .copy.done{background:var(--good);border-color:var(--good);color:#fff;}
-  /* 収支の＋／−切替 */
-  .k-sign{width:34px;height:24px;font-size:12px;}
-  .k-sign.m{color:var(--minus);}
-  .k-sign.p{color:var(--plus);}
   /* ===== 追加ボタン(黄緑) ===== */
   .icobtn.addbtn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
   .icobtn.addbtn:active{filter:brightness(.95);}
@@ -397,13 +401,9 @@
   <section class="panel" id="p-slot">
     <div class="sticky">
       <div class="totbar" id="tot-slot"></div>
-      <div class="lhead">
-        <span style="flex:1">店名・機種</span>
-        <span class="f-money" style="text-align:right;padding-right:6px">収支</span>
-      </div>
     </div>
     <div id="slot-list"></div>
-    <div class="aempty" id="slot-empty">右上の「＋」で来店ごとの収支を追加できます。<br>月の合計が -100,000 を超えるとアラートが出ます。</div>
+    <div class="aempty" id="slot-empty">右上の「＋」で投資額と回収額を記録できます。<br>月の合計が -100,000 を超えるとアラートが出ます。</div>
   </section>
 </main>
 
@@ -719,17 +719,18 @@ async function copyAcq(btn){
 /* ===== スロ収支 ===== */
 function addSlot(d={},atTop){
   const row=mkRow("slot",`
-    <div class="rtop">
-      <input class="k-date dtin" type="date">
-      <button type="button" class="acct k-sign m" onclick="toggleSign(this)" title="＋／−を切り替え">−</button>
-    </div>
-    <div class="rowf">
-      <input class="k-place f-name" placeholder="店名・機種" autocomplete="off">
-      <div class="money f-money"><input class="k-amt" type="text" inputmode="decimal" placeholder="0"></div>
+    <div class="rtop"><input class="k-date dtin" type="date"><b class="k-pl">-</b></div>
+    <div class="bline">
+      <span class="mlab">投資</span>
+      <div class="money knum"><input class="k-in" type="text" inputmode="decimal" placeholder="¥0"></div>
+      <span class="arw">→</span>
+      <span class="mlab">回収</span>
+      <div class="money knum"><input class="k-out" type="text" inputmode="decimal" placeholder="¥0"></div>
     </div>`);
   putRow(document.getElementById("slot-list"),row,atTop);
   const q=s=>row.querySelector(s);
-  q(".k-date").value=d.date||today(); q(".k-place").value=d.place||""; q(".k-amt").value=d.amt||"";
+  q(".k-date").value=d.date||today(); q(".k-in").value=d.invest||""; q(".k-out").value=d.back||"";
+  row.dataset.place=d.place||"";                    // 旧データの店名は非表示のまま保持
   row.querySelectorAll(".money input").forEach(fmtMoney);
   row.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ calcSlot(); scheduleSave(); }));
   q(".k-date").addEventListener("change",()=>{ calcSlot(); saveLocal(); });
@@ -740,26 +741,18 @@ function calcSlot(){
   let total=0; const byMonth={};
   const rows=document.querySelectorAll('#slot-list .srow');
   rows.forEach(card=>{
-    const q=s=>card.querySelector(s), amt=numv(q(".k-amt").value);
+    const q=s=>card.querySelector(s);
+    const inv=numv(q(".k-in").value), out=numv(q(".k-out").value), amt=out-inv;
     const m=(q(".k-date").value||"").slice(0,7)||"日付なし";
     byMonth[m]=(byMonth[m]||0)+amt;
-    const el=q(".k-amt"); el.classList.toggle("pos",amt>0); el.classList.toggle("neg",amt<0);
-    const sg=q(".k-sign"); if(sg){ const neg=(el.value||"").trim().startsWith("-");
-      sg.textContent=neg?"−":"＋"; sg.classList.toggle("m",neg); sg.classList.toggle("p",!neg); }
+    const pl=q(".k-pl"), any=(q(".k-in").value.trim()||q(".k-out").value.trim());
+    pl.textContent=any?yen(amt):"-"; pl.className="k-pl "+(any?(amt>=0?"pos":"neg"):"");
     const show=(filterMonth===""||m===filterMonth); card.style.display=show?"":"none";
     if(show) total+=amt;
   });
   renderTot("tot-slot","収支 合計",total,byMonth,"slot",true,ymLabel);
   setEmpty("slot-empty",rows.length);
   checkSlotAlert(byMonth[thisMonth()]||0);
-}
-// 収支の符号を切り替える(スマホの数字キーボードに「−」が無いため)
-function toggleSign(btn){
-  const inp=btn.closest(".srow").querySelector(".k-amt");
-  const v=(inp.value||"").replace(/[,¥￥]/g,"").trim();
-  if(v===""||v==="-"){ inp.value=(v==="-")?"":"-"; }
-  else { inp.value=v.startsWith("-")?v.slice(1):"-"+v; fmtMoney(inp); }
-  calcSlot(); saveLocal();
 }
 let slotAlertHidden=false;   // 「わかった」で一時的に閉じただけ。スロ収支ページを開き直すと また出る
 function checkSlotAlert(monthTotal){
@@ -796,7 +789,7 @@ function recalc(kind){
 function delCard(btn){
   const card=btn.closest(".srow"), kind=card.dataset.kind, q=s=>card.querySelector(s);
   const label=kind==="slot"
-    ? ((q(".k-date")?.value||"")+" "+(q(".k-place")?.value||"")).trim()
+    ? ((q(".k-date")?.value||"")+" "+(q(".k-pl")?.textContent||"")).trim()
     : ((q("."+preOf(kind)+"-code")?.value||"")+" "+(q(".name-inp")?.value||"")).trim();
   if(confirm("この行を削除しますか？\n"+(label||"(空の行)"))){
     card.remove(); recalc(kind); saveLocal();
@@ -839,7 +832,9 @@ function gatherDiv(){ return [...document.querySelectorAll('#div-list .srow')].m
 function gatherAvg(list){ return [...document.querySelectorAll('#'+list+'-list .srow')].map(c=>{const q=s=>c.querySelector(s);
   return {code:q(".a-code").value,name:q(".a-name").value,acq:mv(q(".a-acq").value)};}); }
 function gatherSlot(){ return [...document.querySelectorAll('#slot-list .srow')].map(c=>{const q=s=>c.querySelector(s);
-  return {date:q(".k-date").value,place:q(".k-place").value,amt:mv(q(".k-amt").value)};}); }
+  const inv=numv(q(".k-in").value), out=numv(q(".k-out").value);
+  return {date:q(".k-date").value,invest:mv(q(".k-in").value),back:mv(q(".k-out").value),
+          amt:String(out-inv),place:c.dataset.place||""};}); }
 function gather(){ return {watch:gatherWatch(),trade:gatherSale("trade"),tradek:gatherSale("tradek"),
   avg:gatherAvg("avg"),avgk:gatherAvg("avgk"),div:gatherDiv(),slot:gatherSlot()}; }
 function saveLocal(showToast){ localStorage.setItem("kabuSpData",JSON.stringify(gather())); if(showToast===true)toast("💾 保存しました"); }
@@ -855,8 +850,12 @@ function normalizeAvgRow(r){ if(Array.isArray(r)) return {code:r[0],name:r[1],ac
   return {code:r.code,name:r.name,acq:r.acq}; }
 function normalizeDivRow(r){ if(Array.isArray(r)) return {date:r[0],code:r[1],name:r[2],amt:r[3],memo:r[4]};
   return {date:r.date,code:r.code,name:r.name,amt:r.amt,memo:r.memo}; }
-function normalizeSlotRow(r){ if(Array.isArray(r)) return {date:r[0],place:r[1],amt:r[2]};
-  return {date:r.date,place:r.place,amt:r.amt}; }
+function normalizeSlotRow(r){
+  if(Array.isArray(r)) r={date:r[0],place:r[1],amt:r[2]};
+  if(r.invest!==undefined||r.back!==undefined)
+    return {date:r.date,invest:r.invest,back:r.back,place:r.place||""};
+  const a=numv(r.amt);                     // 旧データ(収支だけ)は投資／回収に振り分ける
+  return {date:r.date,place:r.place||"",invest:a<0?String(-a):"",back:a>0?String(a):""}; }
 function applyData(d){
   ["watch-list","trade-list","tradek-list","avg-list","avgk-list","div-list","slot-list"].forEach(id=>document.getElementById(id).innerHTML="");
   (d.watch||[]).forEach(r=>addWatch(normalizeWatchRow(r)));
