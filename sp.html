@@ -85,7 +85,8 @@
   .lhead{display:flex;align-items:center;gap:4px;background:var(--card);border-bottom:1px solid var(--line);
     padding:2px 12px 8px;font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.03em;}
   .lhead span,.lhead button{min-width:0;}
-  .toolbar{display:flex;justify-content:flex-end;padding:8px 12px 6px;background:var(--card);}
+  .toolbar{display:flex;justify-content:flex-end;gap:6px;padding:8px 12px 6px;background:var(--card);}
+  .sticky > .toolbar:last-child{border-bottom:1px solid var(--line);padding-bottom:8px;}
   .sticky > .totbar + .toolbar{border-top:1px solid var(--line);}
   .sticky > .totbar + .lhead{border-top:1px solid var(--line);padding-top:9px;}
   .sortbtn{border:1px solid var(--line);background:transparent;color:var(--accent-2);font-family:inherit;
@@ -300,7 +301,7 @@
 
   <!-- 買い予定 -->
   <section class="panel active" id="p-watch">
-    <div class="sticky"><div class="toolbar"><button class="sortbtn" onclick="sortActive()">⇅ コード順</button></div></div>
+    <div class="sticky"><div class="toolbar"><button class="sortbtn" onclick="sortActive('code')">⇅ コード順</button></div></div>
     <div class="fetchmsg" id="wmsg"></div>
     <div id="watch-list"></div>
     <div class="aempty" id="watch-empty">右上の「＋」で買いたい銘柄を追加できます。</div>
@@ -315,7 +316,10 @@
       </div>
       <div class="totbar" id="tot-trade"></div>
       <div class="totbar" id="tot-tradek" style="display:none"></div>
-      <div class="toolbar"><button class="sortbtn" onclick="sortActive()">⇅ コード順</button></div>
+      <div class="toolbar">
+        <button class="sortbtn" onclick="sortActive('date')">⇅ 日付順</button>
+        <button class="sortbtn" onclick="sortActive('code')">⇅ コード順</button>
+      </div>
     </div>
     <div id="trade-list"></div>
     <div id="tradek-list" style="display:none"></div>
@@ -326,7 +330,10 @@
   <section class="panel" id="p-div">
     <div class="sticky">
       <div class="totbar" id="tot-div"></div>
-      <div class="toolbar"><button class="sortbtn" onclick="sortActive()">⇅ コード順</button></div>
+      <div class="toolbar">
+        <button class="sortbtn" onclick="sortActive('date')">⇅ 日付順</button>
+        <button class="sortbtn" onclick="sortActive('code')">⇅ コード順</button>
+      </div>
       <div class="lhead">
         <span class="f-code" style="text-align:center">コード</span>
         <span class="f-name">銘柄</span>
@@ -344,7 +351,7 @@
         <button class="seg on" id="seg-avg" onclick="setSeg('avg','avg')">株</button>
         <button class="seg" id="seg-avgk" onclick="setSeg('avg','avgk')">キンカブ</button>
       </div>
-      <div class="toolbar"><button class="sortbtn" onclick="sortActive()">⇅ コード順</button></div>
+      <div class="toolbar"><button class="sortbtn" onclick="sortActive('code')">⇅ コード順</button></div>
       <div class="lhead">
         <span class="f-code" style="text-align:center">コード</span>
         <span class="f-name">銘柄</span>
@@ -401,6 +408,7 @@
   <section class="panel" id="p-slot">
     <div class="sticky">
       <div class="totbar" id="tot-slot"></div>
+      <div class="toolbar"><button class="sortbtn" onclick="sortActive('date')">⇅ 日付順</button></div>
     </div>
     <div id="slot-list"></div>
     <div class="aempty" id="slot-empty">右上の「＋」で投資額と回収額を記録できます。<br>月の合計が -100,000 を超えるとアラートが出ます。</div>
@@ -805,21 +813,26 @@ function addCurrent(){
   saveLocal();
   if(row) document.querySelector("main").scrollTo({top:0,behavior:"smooth"});
 }
-/* コードで並べ替え(タップごとに昇順⇄降順) */
-function sortActive(){
+/* 並べ替え(タップごとに昇順⇄降順)。key="code" または "date" */
+function sortActive(key){
   const k=activeList();
-  sortList(k+"-list",preOf(k));
+  sortList(k+"-list",preOf(k),key||"code");
 }
-function sortList(id,pre){
+function sortList(id,pre,key){
   const box=document.getElementById(id); if(!box)return;
-  const asc=!sortAsc[id]; sortAsc[id]=asc;
+  const sk=id+":"+key;
+  // 初回は コード=昇順 / 日付=新しい順
+  const asc = (sortAsc[sk]===undefined) ? (key!=="date") : !sortAsc[sk];
+  sortAsc[sk]=asc;
+  const val=el=>(el.querySelector("."+pre+"-"+key)?.value||"").trim().toUpperCase();
   [...box.children].sort((a,b)=>{
-    const va=(a.querySelector("."+pre+"-code")?.value||"").trim().toUpperCase();
-    const vb=(b.querySelector("."+pre+"-code")?.value||"").trim().toUpperCase();
-    if(!va&&!vb)return 0; if(!va)return 1; if(!vb)return -1;
+    const va=val(a), vb=val(b);
+    if(!va&&!vb)return 0; if(!va)return 1; if(!vb)return -1;   // 未入力は常に末尾
     return asc ? va.localeCompare(vb,"ja",{numeric:true}) : vb.localeCompare(va,"ja",{numeric:true});
   }).forEach(r=>box.appendChild(r));
-  saveLocal(); toast(asc?"⇅ コードの昇順にしました":"⇅ コードの降順にしました");
+  saveLocal();
+  toast(key==="date" ? (asc?"⇅ 日付の古い順にしました":"⇅ 日付の新しい順にしました")
+                     : (asc?"⇅ コードの昇順にしました":"⇅ コードの降順にしました"));
 }
 
 /* ===== 保存・読込 ===== */
